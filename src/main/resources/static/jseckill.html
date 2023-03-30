@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>秒杀活动1</title>
+    <style type="text/css">
+        #app {
+            width: 500px;
+            margin: 0 auto;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>秒杀页面</h1>
+    <div v-for="product in goods">
+        <h2>{{product.name}}</h2>
+        <p>价格：{{product.price}}</p>
+        <p>库存：{{product.stock}}</p>
+        <button>秒杀</button>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@next"></script>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                goods: [
+                    {goodsId: 1, name: '商品1', price: 100, stock: 10},
+                ]
+            }
+        },
+        methods: {
+            getProducts() {
+                fetch('/api/seckill/goods')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.products = data
+                    })
+            },
+            getDynamicToken() {
+                fetch('/api/seckill/dynamicurl')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.products = data
+                    })
+            },
+            order() {
+                fetch('/api/seckill/order')
+                .then(response => response.json())
+                .then(data => {
+                    this.products = data
+                })
+            }
+        },
+    })
+    app.mount('#app')
+</script>
+</body>
+</html>

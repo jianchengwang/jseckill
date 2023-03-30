@@ -1,0 +1,27 @@
+server:
+  port: 9071
+
+spring:
+  application:
+    name: jseckill-client
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/static/
+
+mybatis-plus:
+  configuration:
+    # 驼峰下划线转换
+    map-underscore-to-camel-case: true
+    # 配置的缓存的全局开关
+    cache-enabled: true
+    # 延时加载的开关
+    lazy-loading-enabled: true
+    # 开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    multiple-result-sets-enabled: true
+    use-generated-keys: true
+    default-statement-timeout: 60
+    global-config:
+      db-config:
+        # 逻辑删除配置
+        logic-delete-value: 1
+        logic-not-delete-value: 0
