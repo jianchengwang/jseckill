@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <style type="text/css">
+        #app {
+            width: 500px;
+            margin: 0 auto;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <form>
+        <label for="username">Username:</label>
+        <input type="text" id="username" v-model="username">
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" v-model="password">
+        <br>
+        <button type="submit" @click.prevent="login">Login</button>
+    </form>
+</div>
+
+<script src="https://unpkg.com/vue@next"></script>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                username: '15300000000',
+                password: ''
+            }
+        },
+        methods: {
+            login() {
+                fetch('http://localhost:9071/api/client/user/loginByUsername', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: this.username,
+                        password: this.password
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    } else {
+                        throw new Error('Something went wrong')
+                    }
+                }).then(data => {
+                    console.log(data)
+                    alert('login success')
+                    window.localStorage.setItem("token", data);
+                    window.location.href="./jseckill.html";
+                }).catch(error => {
+                    console.log(error)
+                })
+                // handle login logic here
+            }
+        }
+    })
+
+    app.mount('#app')
+</script>
+</body>
+</html>

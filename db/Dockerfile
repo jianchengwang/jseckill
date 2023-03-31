@@ -8,4 +8,4 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY ./my.cnf /etc/mysql/conf.d
 
-COPY ./jseckill.sql /docker-entrypoint-initdb.d
+COPY ./*.sql /docker-entrypoint-initdb.d
