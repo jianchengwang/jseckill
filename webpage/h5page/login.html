@@ -26,6 +26,7 @@
 
 <script src="https://unpkg.com/vue@next"></script>
 <script>
+    const authUrl = "http://localhost:9071/api/auth";
     const app = Vue.createApp({
         data() {
             return {
@@ -35,7 +36,7 @@
         },
         methods: {
             login() {
-                fetch('http://localhost:9071/api/client/user/loginByUsername', {
+                fetch(clientUrl + '/user/loginByUsername', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

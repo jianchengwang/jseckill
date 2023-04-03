@@ -3,10 +3,12 @@ server:
 
 spring:
   application:
-    name: jseckill-client
+    name: jseckill
   web:
     resources:
       static-locations: classpath:/META-INF/resources/,classpath:/static/
+  cache:
+    type: redis
 
 mybatis-plus:
   configuration:

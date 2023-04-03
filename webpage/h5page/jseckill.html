@@ -14,41 +14,49 @@
 <body>
 <div id="app">
     <h1>秒杀页面</h1>
-    <div v-for="product in goods">
-        <h2>{{product.name}}</h2>
-        <p>价格：{{product.price}}</p>
-        <p>库存：{{product.stock}}</p>
-        <button>秒杀</button>
+    <div>
+        <h2>{{goodsInfo.goodsName}}</h2>
+        <p>价格：{{goodsInfo.goodsPrice}}</p>
+        <p>库存：{{goodsInfo.stockNum}}</p>
+        <p>秒杀倒计时：{{goodsInfo.remainSeconds}}</p>
+        <button disabled="!seckillFlag">秒杀</button>
     </div>
 </div>
 <script src="https://unpkg.com/vue@next"></script>
 <script>
-    const entryKey = "874e0ed7-017a-4c1a-9fb1-a9d650a07d22"
+    const clientUrl = "http://localhost:9071/api/client";
+    const skGoodsId = 1;
     const app = Vue.createApp({
         data() {
             return {
-                goods: [
-                    {goodsId: 1, name: '商品1', price: 100, stock: 10},
-                ]
+                goodsInfo: {
+                    id: 0,
+                    goodsName: '',
+                    goodsPrice: 0,
+                    stockNum: 0,
+                    remainSeconds: 0,
+                    seckillFlag: false,
+                    entryKey: ''
+                }
             }
         },
         mounted() {
-            this.getProducts()
+            this.getGoodsInfo()
         },
         methods: {
-            getProducts() {
-                fetch('/api/seckill/goods')
-                    .then(response => response.json())
-                    .then(data => {
-                        this.products = data
-                    })
+            getGoodsInfo() {
+                fetch('/api/seckill/goodsInfo/1')
+                .then(response => response.json())
+                .then(data => {
+                    this.goodsInfo = data
+                })
             },
-            getDynamicToken() {
+            getSkToken() {
                 fetch('/api/seckill/dynamicurl')
-                    .then(response => response.json())
-                    .then(data => {
-                        this.products = data
-                    })
+                .then(response => response.json())
+                .then(data => {
+                    this.products = data
+                })
             },
             order() {
                 fetch('/api/seckill/order')

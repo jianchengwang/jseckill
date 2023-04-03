@@ -1,6 +1,6 @@
 package com.example.jseckill.domain.user.repository;
 
-import com.example.jseckill.infrastructure.biz.user.db.po.User;
+import com.example.jseckill.infrastructure.user.db.po.User;
 
 /**
  * @author jianchengwang

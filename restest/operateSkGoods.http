@@ -1,0 +1,44 @@
+### 用户名密码登录
+POST {{auth_url}}/user/loginByUsername
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "123456"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("adminToken", response.body.data);
+%}
+
+### 创建秒杀商品
+POST {{operate_url}}/skGoods/create
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+    "goodsName": "秒杀商品2",
+    "goodsPrice": 20000,
+    "skPrice": 5000,
+    "skNum": 1000,
+    "startTime": "2023-04-02 19:00:00",
+    "endTime": "2023-04-02 20:00:00"
+}
+
+> {%
+client.global.set("skGoodsId", response.body.data);
+%}
+
+### 商品预热
+PUT {{operate_url}}/skGoods/preheat/{{skGoodsId}}
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+    "entryKey": "djingd!",
+    "buyLimit": 3
+}
+

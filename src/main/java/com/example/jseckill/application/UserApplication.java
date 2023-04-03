@@ -4,15 +4,15 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.example.jseckill.domain.user.repository.UserRepository;
-import com.example.jseckill.infrastructure.biz.user.db.po.User;
-import com.example.jseckill.infrastructure.common.exception.ClientException;
-import com.example.jseckill.infrastructure.common.exception.FrameworkErrorCode;
-import com.example.jseckill.infrastructure.config.permission.user.TokenUser;
-import com.example.jseckill.infrastructure.config.permission.user.TokenUserContextHolder;
-import com.example.jseckill.infrastructure.converter.UserConverter;
-import com.example.jseckill.infrastructure.enums.UserStatusEnum;
-import com.example.jseckill.infrastructure.errors.AuthErrorCode;
-import com.example.jseckill.interfaces.client.vo.UserInfoVO;
+import com.example.jseckill.infrastructure.user.db.po.User;
+import com.example.jseckill.infrastructure.framework.exception.ClientException;
+import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
+import com.example.jseckill.infrastructure.framework.config.permission.user.TokenUser;
+import com.example.jseckill.infrastructure.framework.config.permission.user.TokenUserContextHolder;
+import com.example.jseckill.infrastructure.common.converter.UserConverter;
+import com.example.jseckill.infrastructure.common.enums.UserStatusEnum;
+import com.example.jseckill.infrastructure.common.errors.AuthErrorCode;
+import com.example.jseckill.interfaces.auth.vo.UserInfoVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class UserApplication {
     public String login(String username, String password) {
         User user = userRepository.findByUsername(username);
         if(user == null){
-            throw new ClientException(FrameworkErrorCode.RESOURCE_NOT_FOUND, "用户不存在");
+            throw new ClientException("用户不存在", FrameworkErrorCode.RESOURCE_NOT_FOUND);
         }
         String checkPassword = SaSecureUtil.md5BySalt(password, user.getPasswordSalt());
         if(!user.getPassword().equals(checkPassword)) {
