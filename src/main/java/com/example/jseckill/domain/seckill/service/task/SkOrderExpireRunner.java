@@ -29,7 +29,7 @@ public class SkOrderExpireRunner implements CommandLineRunner {
             try {
                 RBlockingQueue<Long> waitPayOrderQueue = redisRepository.getWaitPayOrderQueue();
                 Long orderId = waitPayOrderQueue.take();
-                if(orderId == null || orderId <= 0){
+                if(orderId <= 0){
                     continue;
                 }
                 executor.execute(new OrderExpireRunnable(orderId));
@@ -40,7 +40,7 @@ public class SkOrderExpireRunner implements CommandLineRunner {
     }
 
     public class OrderExpireRunnable implements Runnable {
-        private Long orderId;
+        private final Long orderId;
         public OrderExpireRunnable(Long orderId) {
             this.orderId = orderId;
         }

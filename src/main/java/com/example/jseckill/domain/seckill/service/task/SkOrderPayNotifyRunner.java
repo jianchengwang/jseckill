@@ -47,7 +47,7 @@ public class SkOrderPayNotifyRunner implements CommandLineRunner {
     }
 
     public class SkOrderPayNotifyRunnable implements Runnable {
-        private List<PayNotifyDTO> payNotifyList;
+        private final List<PayNotifyDTO> payNotifyList;
         public SkOrderPayNotifyRunnable(List<PayNotifyDTO> payNotifyList){
             this.payNotifyList = payNotifyList;
         }
@@ -61,7 +61,9 @@ public class SkOrderPayNotifyRunner implements CommandLineRunner {
             } catch (Exception e) {
                 log.error(e.getMessage(),e);
                 // 回滚事务
-                transactionManager.rollback(tx);
+                if(tx != null) {
+                    transactionManager.rollback(tx);
+                }
                 redisRepository.pushPayNotify(payNotifyList);
             }
         }

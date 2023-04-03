@@ -12,16 +12,15 @@ public final class TokenUserContextHolder {
     public static Long currentUserId() {
         try {
             return StpUtil.getLoginId(0L);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return 0L;
     }
 
     public static TokenUser currentUser() {
         try {
-            TokenUser tokenUser = StpUtil.getSessionByLoginId(currentUserId()).get(TOKEN_USER_KEY, new TokenUser());
-            return tokenUser;
-        } catch (Exception e) {
+            return StpUtil.getSessionByLoginId(currentUserId()).get(TOKEN_USER_KEY, new TokenUser());
+        } catch (Exception ignored) {
         }
         return null;
     }

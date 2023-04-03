@@ -11,13 +11,13 @@ Content-Type: application/json
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    client.global.set("adminToken", response.body.data);
+    client.global.set("operateToken", response.body.data);
 %}
 
 ### 创建秒杀商品
 POST {{operate_url}}/skGoods/create
 Content-Type: application/json
-Authorization: {{adminToken}}
+Authorization: {{operateToken}}
 
 {
     "goodsName": "秒杀商品2",
@@ -35,7 +35,7 @@ client.global.set("skGoodsId", response.body.data);
 ### 商品预热
 PUT {{operate_url}}/skGoods/preheat/{{skGoodsId}}
 Content-Type: application/json
-Authorization: {{adminToken}}
+Authorization: {{operateToken}}
 
 {
     "entryKey": "djingd!",

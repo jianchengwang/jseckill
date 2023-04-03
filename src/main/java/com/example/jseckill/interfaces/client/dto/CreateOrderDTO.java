@@ -16,6 +16,9 @@ import java.math.BigInteger;
 @Schema(description = "客户端-秒杀模块-下单参数")
 @Data
 public class CreateOrderDTO implements DTO {
+    @NotEmpty
+    @Schema(description = "秒杀令牌")
+    private String skToken;
     @NotNull
     @Schema(description = "秒杀商品编号")
     private Long skGoodsId;
@@ -23,9 +26,6 @@ public class CreateOrderDTO implements DTO {
     @Min(1)
     @Schema(description = "购买数量")
     private BigInteger buyNum;
-    @NotEmpty
-    @Schema(description = "秒杀令牌")
-    private String skToken;
     @Schema(description = "用户编号")
     private Long userId;
 }

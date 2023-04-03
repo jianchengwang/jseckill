@@ -88,13 +88,13 @@ public class SeckillApplication {
     }
 
     public WxPayInfoDTO confirmPayInfo(ConfirmPayInfoDTO confirmPayInfoParam) {
-        Long orderId = confirmPayInfoParam.getOrderId();
+        String orderNo = confirmPayInfoParam.getOrderNo();
         PayMethodEnum payMethod = confirmPayInfoParam.getPayMethod();
         BigInteger payMoney = confirmPayInfoParam.getPayMoney();
-        SkOrder skOrder = orderRepository.findById(orderId);
+        SkOrder skOrder = orderRepository.findByOrderNo(orderNo);
         SkOrderDomain skOrderDomain = new SkOrderDomain(skOrder, redisRepository);
         skOrderDomain.confirmPayInfo(payMoney);
-        orderRepository.confirmPayInfo(orderId, payMethod, payMoney);
+        orderRepository.confirmPayInfo(skOrder.getId(), payMethod, payMoney);
 
         WxPayInfoDTO wxPayInfoDTO = new WxPayInfoDTO();
         wxPayInfoDTO.setOutTradeNo(skOrder.getOrderNo());

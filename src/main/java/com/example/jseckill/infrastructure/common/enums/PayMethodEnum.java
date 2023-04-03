@@ -8,8 +8,8 @@ import com.example.jseckill.infrastructure.framework.pojo.IBaseEnum;
  */
 public enum PayMethodEnum implements IBaseEnum<Integer> {
     FREE(0, "免费"),
-    ALIPAY(1, "支付宝"),
-    WECHAT(2, "微信"),
+    WECHAT(1, "微信"),
+    ALIPAY(2, "支付宝"),
     ;
 
     private final Integer value;

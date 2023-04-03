@@ -56,8 +56,8 @@ public class WxPayController {
     }
 
     public class NotifyBackendRunnable implements Runnable {
-        private String backendNotifyUrl;
-        private WxPayNotifyDTO wxPayNotify;
+        private final String backendNotifyUrl;
+        private final WxPayNotifyDTO wxPayNotify;
         public NotifyBackendRunnable(String backendNotifyUrl, WxPayNotifyDTO wxPayNotify) {
             this.backendNotifyUrl = backendNotifyUrl;
             this.wxPayNotify = wxPayNotify;
@@ -73,7 +73,7 @@ public class WxPayController {
                         break;
                     }
                     tryTimes++;
-                    Thread.sleep(5000 * tryTimes);
+                    Thread.sleep(5000L * tryTimes);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

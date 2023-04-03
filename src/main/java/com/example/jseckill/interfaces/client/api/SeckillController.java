@@ -45,15 +45,15 @@ public class SeckillController {
     }
 
     @Operation(summary = "获取令牌", description = "获取令牌")
-    @GetMapping("getSkToken")
-    public Response<String> getSkToken(Long skGoodsId, String entryKey) {
+    @GetMapping("token/{skGoodsId}")
+    public Response<String> getSkToken(@PathVariable Long skGoodsId, String entryKey) {
         Long userId = TokenUserUtil.currentUser();
         String skToken = seckillApplication.getSkToken(skGoodsId, userId, entryKey);
         return Response.ok(skToken);
     }
 
     @Operation(summary = "提交订单", description = "提交订单")
-    @PostMapping("createOrder")
+    @PostMapping("order")
     public Response<Void> createOrder(@Valid @RequestBody CreateOrderDTO createOrderParam) {
         createOrderParam.setUserId(TokenUserUtil.currentUser());
         seckillApplication.createOrder(createOrderParam);
@@ -61,13 +61,13 @@ public class SeckillController {
     }
 
     @Operation(summary = "校验是否成功创建订单", description = "校验是否成功创建订单，-1创建失败；0未创建；>0为订单编号")
-    @GetMapping("checkCreateOrderSuccess")
-    public Response<String> checkCreateOrderSuccess(String skToken) {
+    @GetMapping("order/check/{skToken}")
+    public Response<String> checkCreateOrderSuccess(@PathVariable String skToken) {
         return Response.ok(seckillApplication.checkCreateOrderSuccess(skToken));
     }
 
     @Operation(summary = "确认支付信息", description = "确认支付信息")
-    @PostMapping("confirmPayInfo")
+    @PostMapping("order/confirmPayInfo")
     public Response<Void> confirmPayInfo(@Valid @RequestBody ConfirmPayInfoDTO confirmPayInfoParam) {
         WxPayInfoDTO wxPayInfoDTO = seckillApplication.confirmPayInfo(confirmPayInfoParam);
         // 跳过支付环节，直接支付成功
@@ -76,7 +76,7 @@ public class SeckillController {
     }
 
     public class CallPayRunnable implements Runnable {
-        private WxPayInfoDTO wxPayInfoDTO;
+        private final WxPayInfoDTO wxPayInfoDTO;
         public CallPayRunnable(WxPayInfoDTO wxPayInfoDTO) {
             this.wxPayInfoDTO = wxPayInfoDTO;
         }

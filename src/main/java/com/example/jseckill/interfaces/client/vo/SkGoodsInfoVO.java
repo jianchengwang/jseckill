@@ -37,10 +37,11 @@ public class SkGoodsInfoVO {
 
     @Schema(description = "距离活动开始还剩多少秒")
     public long getRemainSeconds() {
+        long remainSeconds = 0L;
         if (startTime != null) {
-            return startTime.toEpochSecond(ZoneOffset.of("+8")) - LocalDateTime.now().toEpochSecond(ZoneOffset.of("+8"));
+            remainSeconds = startTime.toEpochSecond(ZoneOffset.of("+8")) - LocalDateTime.now().toEpochSecond(ZoneOffset.of("+8"));
         }
-        return 0L;
+        return remainSeconds > 0 ? remainSeconds : 0;
     }
 
     @Schema(description = "是否可以秒杀标记")

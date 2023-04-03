@@ -18,7 +18,7 @@ import java.math.BigInteger;
 public class ConfirmPayInfoDTO implements DTO {
     @NotNull
     @Schema(description = "订单编号")
-    private Long orderId;
+    private String orderNo;
     @NotNull
     @Schema(description = "支付方式")
     private PayMethodEnum payMethod;

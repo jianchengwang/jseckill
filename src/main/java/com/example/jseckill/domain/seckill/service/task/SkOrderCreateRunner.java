@@ -48,7 +48,7 @@ public class SkOrderCreateRunner implements CommandLineRunner {
         }
     }
     public class OrderCreateRunnable implements Runnable {
-        private SkOrderDomain skOrderDomain;
+        private final SkOrderDomain skOrderDomain;
         public OrderCreateRunnable(SkOrderDomain skOrderDomain){
             this.skOrderDomain = skOrderDomain;
         }
@@ -75,7 +75,9 @@ public class SkOrderCreateRunner implements CommandLineRunner {
            } catch (Exception e) {
                log.error(e.getMessage(),e);
                // 回滚事务
-               transactionManager.rollback(tx);
+                if(tx != null) {
+                    transactionManager.rollback(tx);
+                }
                // 重试三次
                if(skOrderDomain.incrTryTimes() < 3) {
                    redisRepository.pushSkOrder(skOrderDomain);

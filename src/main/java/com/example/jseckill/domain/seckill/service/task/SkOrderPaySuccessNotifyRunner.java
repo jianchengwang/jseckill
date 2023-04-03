@@ -45,7 +45,8 @@ public class SkOrderPaySuccessNotifyRunner implements CommandLineRunner {
     }
 
     public class SkOrderPayNotifySuccessRunnable implements Runnable {
-        private SkPayDomain skPayDomain;
+        private final SkPayDomain skPayDomain;
+
         public SkOrderPayNotifySuccessRunnable(SkPayDomain skPayDomain){
             this.skPayDomain = skPayDomain;
         }
@@ -59,9 +60,12 @@ public class SkOrderPaySuccessNotifyRunner implements CommandLineRunner {
             } catch (Exception e) {
                 log.error(e.getMessage(),e);
                 // 回滚事务
-                transactionManager.rollback(tx);
+                if(tx != null) {
+                    transactionManager.rollback(tx);
+                }
                 // 重试三次
-                if(skPayDomain.incrTryTimes() < 3) {
+                int maxTryTimes = 3;
+                if(skPayDomain.incrTryTimes() < maxTryTimes) {
                     redisRepository.pushPaySuccessNotify(skPayDomain);
                 }
             }
