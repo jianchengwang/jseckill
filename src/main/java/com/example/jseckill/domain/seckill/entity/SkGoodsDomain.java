@@ -3,6 +3,8 @@ package com.example.jseckill.domain.seckill.entity;
 import com.example.jseckill.infrastructure.framework.exception.ClientException;
 import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
  * @author jianchengwang
  * @date 2023/4/1
  */
+@Data
+@NoArgsConstructor
 public class SkGoodsDomain {
     private Long skGoodsId;
     private SkGoods skGoods;

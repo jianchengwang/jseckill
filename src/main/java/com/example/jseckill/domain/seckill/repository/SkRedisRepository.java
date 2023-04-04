@@ -25,6 +25,7 @@ public interface SkRedisRepository {
     void createOrderSuccess(String skToken, Long skGoodsId, long buyNum, Long userId, String orderNo);
     void createOrderFail(String skToken);
     void createOrderCancel(Long skGoodsId, Long userId, long buyNum);
+    void paySuccess(Long skGoodsId, Long userId);
     long getUserBuyCount(Long skGoodsId, Long userId);
     long getUserWaitPayCount(Long skGoodsId, Long userId);
     void pushPayNotify(List<PayNotifyDTO> payNotifyList);

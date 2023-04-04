@@ -31,19 +31,22 @@ public class SkOrderPayNotifyRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        while (true){
-            try {
-                List<PayNotifyDTO> payNotifyList = redisRepository.popPayNotify(100);
-                //do some
-                if(CollectionUtil.isEmpty(payNotifyList)) {
-                    continue;
+        log.info("SkOrderPayNotifyRunner start");
+        new Thread(() -> {
+            while (true){
+                try {
+                    List<PayNotifyDTO> payNotifyList = redisRepository.popPayNotify(100);
+                    //do some
+                    if(CollectionUtil.isEmpty(payNotifyList)) {
+                        continue;
+                    }
+                    executor.execute(new SkOrderPayNotifyRunnable(payNotifyList));
+                    //do some
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
                 }
-                executor.execute(new SkOrderPayNotifyRunnable(payNotifyList));
-                //do some
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
             }
-        }
+        }).start();
     }
 
     public class SkOrderPayNotifyRunnable implements Runnable {
@@ -55,6 +58,7 @@ public class SkOrderPayNotifyRunner implements CommandLineRunner {
         public void run() {
             TransactionStatus tx = null;
             try {
+                log.info("Runner PayNotifyList:{}", payNotifyList);
                 tx = transactionManager.getTransaction(new DefaultTransactionDefinition());
                 payNotifyRepository.batchInsert(payNotifyList);
                 transactionManager.commit(tx);

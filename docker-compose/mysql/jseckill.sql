@@ -13,6 +13,8 @@ create table t_user
     user_status   smallint default 1 not null comment '用户状态'
 )
     comment '用户表';
+create unique index t_user_username_uindex
+    on t_user (username);
 
 create table t_sk_goods
 (
@@ -36,13 +38,13 @@ create table t_sk_goods
 create table t_sk_order
 (
     id                 bigint auto_increment comment '主键' primary key,
-    order_no           varchar(64)        not null comment '订单编号',
+    order_no           varchar(128)        not null comment '订单编号',
     sk_goods_id        bigint             not null comment '秒杀商品编号',
     sk_price           bigint          not null comment '秒杀价',
     buy_num            bigint             not null comment '购买数量',
     order_money        bigint             not null comment '订单金额',
     order_time         datetime           not null comment '下单时间',
-    pay_money          bigint             not null comment '支付金额',
+    pay_money          bigint             default 0 not null comment '支付金额',
     pay_time           datetime           null comment '支付时间',
     pay_method         smallint default 0 not null comment '支付方式，0：未支付，1：支付宝，2：微信',
     pay_transaction_id varchar(128)        not null comment '支付流水',
@@ -50,18 +52,22 @@ create table t_sk_order
     order_status       smallint default 0 not null comment '订单状态'
 )
     comment '秒杀订单';
+create unique index t_sk_order_order_no_uindex
+    on t_sk_order (order_no);
 
 create table t_sk_pay_notify
 (
     id                 bigint auto_increment comment '主键' primary key,
-    out_trade_no           bigint        not null comment '业务订单编号',
+    out_trade_no       varchar(128)        not null comment '业务订单编号',
     pay_money          bigint             not null comment '支付金额',
     pay_time           datetime           not null comment '支付时间',
     pay_method         smallint default 0 not null comment '支付方式，0：未支付，1：支付宝，2：微信',
-    pay_transaction_id varchar(64)        not null comment '支付流水',
+    pay_transaction_id varchar(128)        not null comment '支付流水',
     sign                varchar(64)        not null comment '签名',
     success           smallint           default 0 not null comment '是否成功',
     error_message     varchar(256)       null comment '错误信息',
     create_at         datetime           not null comment '创建时间'
 )
     comment '秒杀支付通知';
+create unique index t_sk_pay_notify_out_trade_no_uindex
+    on t_sk_pay_notify (out_trade_no);

@@ -7,7 +7,6 @@ import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.common.consts.SkConstant;
 import com.example.jseckill.infrastructure.framework.exception.ClientException;
 import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
-import com.example.jseckill.infrastructure.framework.utils.RedisUtil;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
 import com.example.jseckill.interfaces.client.dto.PayNotifyDTO;
 import lombok.RequiredArgsConstructor;
@@ -28,22 +27,25 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class SkRedisRepositoryImpl implements SkRedisRepository {
 
-    private final RedisUtil redisUtil;
     private final RedissonClient redissonClient;
+    private final long TimeoutDays = 7;
 
     @Override
     public boolean hasSkToken(Long skGoodsId, Long userId) {
         String skTokenKey = String.format(SkConstant.SK_TOKEN_KEY, skGoodsId, userId);
-        return Boolean.TRUE.equals(redisUtil.redisTemplate.hasKey(skTokenKey));
+        RBucket<String> bucket = redissonClient.getBucket(skTokenKey);
+        return bucket.isExists();
     }
 
     @Override
     public String getOrSetSkToken(Long skGoodsId, Long userId) {
         String skTokenKey = String.format(SkConstant.SK_TOKEN_KEY, skGoodsId, userId);
-        if(Boolean.FALSE.equals(redisUtil.redisTemplate.hasKey(skTokenKey))) {
-            redisUtil.setCacheObject(skTokenKey, UUID.fastUUID(), 5, TimeUnit.MINUTES);
+        RBucket<String> bucket = redissonClient.getBucket(skTokenKey);
+        if(!bucket.isExists()) {
+            String skToken = UUID.fastUUID().toString(true);
+            return bucket.getAndSet(skToken, 5, TimeUnit.MINUTES);
         }
-        return redisUtil.getCacheObject(skTokenKey).toString();
+        return bucket.get();
     }
 
     @Override
@@ -53,36 +55,50 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
         RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
         RBucket<Long> skGoodsStock = transaction.getBucket(skGoodsStockKey);
-        skGoodsStock.set(stockNum.longValue(), 2, TimeUnit.DAYS);
+        skGoodsStock.set(stockNum.longValue(), TimeoutDays, TimeUnit.DAYS);
         transaction.commit();
     }
 
     @Override
     public BigInteger getSkGoodsStockNum(Long skGoodsId) {
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        if(Boolean.FALSE.equals(redisUtil.redisTemplate.hasKey(skGoodsStockKey))) {
-            return BigInteger.ZERO;
-        }
         RBucket<Long> skGoodsStock = redissonClient.getBucket(skGoodsStockKey);
-        return BigInteger.valueOf(skGoodsStock.get());
+        if(skGoodsStock.isExists()) {
+            return BigInteger.valueOf(skGoodsStock.get());
+        }
+        return BigInteger.ZERO;
     }
 
     @Override
     public long addSkGoodsStock(Long skGoodsId, long addStock) {
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        RAtomicLong stock = redissonClient.getAtomicLong(skGoodsStockKey);
-        return stock.addAndGet(addStock);
+        RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
+        RBucket<Long> bucket = redissonClient.getBucket(skGoodsStockKey);
+        if(!bucket.isExists()) {
+            throw new ClientException("redis skGoodsStock not exists", FrameworkErrorCode.SERVER_ERROR, skGoodsId, addStock);
+        }
+        long stock = bucket.get() + addStock;
+        bucket.set(stock, TimeoutDays, TimeUnit.DAYS);
+        transaction.commit();
+        return stock;
     }
 
     @Override
     public long subSkGoodsStock(Long skGoodsId, long subStock) {
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        RAtomicLong stock = redissonClient.getAtomicLong(skGoodsStockKey);
-        if(stock.get() < subStock) {
-            return -1;
-        } else {
-            return stock.addAndGet(-subStock);
+        RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
+        RBucket<Long> bucket = transaction.getBucket(skGoodsStockKey);
+        if(!bucket.isExists()) {
+            throw new ClientException("redis skGoodsStock not exists", FrameworkErrorCode.SERVER_ERROR, skGoodsId, subStock);
         }
+        long stock = bucket.get() - subStock;
+        if(stock < 0) {
+            stock = -1;
+        } else {
+            bucket.set(stock, TimeoutDays, TimeUnit.DAYS);
+        }
+        transaction.commit();
+        return stock;
     }
 
     @Override
@@ -119,8 +135,9 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public String checkOrderCreateSuccess(String skToken) {
         String skOrderCreateFlagKey = String.format(SkConstant.SK_ORDER_CREATE_SUCCESS, skToken);
-        if(Boolean.TRUE.equals(redisUtil.redisTemplate.hasKey(skOrderCreateFlagKey))) {
-            return redisUtil.getCacheObject(skOrderCreateFlagKey);
+        RBucket<String> bucket = redissonClient.getBucket(skOrderCreateFlagKey);
+        if(bucket.isExists()) {
+            return bucket.get();
         }
         return "0";
     }
@@ -134,17 +151,14 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
 
     @Override
     public RBlockingQueue<Long> getWaitPayOrderQueue() {
-        RBlockingQueue<Long> blockingFairQueue = redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
-        RDelayedQueue<Long> delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
-        delayedQueue.offer(null, 5, TimeUnit.MINUTES);
-        return blockingFairQueue;
+        return redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
     }
 
     @Override
     public void createOrderSuccess(String skToken, Long skGoodsId, long buyNum, Long userId, String orderNo) {
         RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
         // 待支付数量+1
-        String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, userId);
+        String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, skGoodsId, userId);
         RBucket<Long> waitPayBucket = transaction.getBucket(waitPayCountKey);
         if(waitPayBucket.isExists()) {
             waitPayBucket.set(waitPayBucket.get() + 1);
@@ -170,7 +184,8 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public void createOrderFail(String skToken) {
         String skOrderCreateFlagKey = String.format(SkConstant.SK_ORDER_CREATE_SUCCESS, skToken);
-        redisUtil.setCacheObject(skOrderCreateFlagKey, "-1", 5, TimeUnit.MINUTES);
+        RBucket<String> bucket = redissonClient.getBucket(skOrderCreateFlagKey);
+        bucket.set("-1", 5, TimeUnit.MINUTES);
     }
 
     @Override
@@ -193,10 +208,24 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     }
 
     @Override
+    public void paySuccess(Long skGoodsId, Long userId) {
+        RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
+        // 待支付数量-1
+        String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, skGoodsId, userId);
+        RBucket<Long> waitPayBucket = transaction.getBucket(waitPayCountKey);
+        if(waitPayBucket.isExists()) {
+            waitPayBucket.set(waitPayBucket.get() - 1);
+        }
+        // 提交事务
+        transaction.commit();
+    }
+
+    @Override
     public long getUserWaitPayCount(Long skGoodsId, Long userId) {
         String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, skGoodsId, userId);
-        if(redisUtil.redisTemplate.hasKey(waitPayCountKey)) {
-            return redisUtil.getCacheObject(waitPayCountKey);
+        RBucket<Long> bucket = redissonClient.getBucket(waitPayCountKey);
+        if(bucket.isExists()) {
+            return bucket.get();
         }
         return 0;
     }
@@ -236,8 +265,9 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public long getUserBuyCount(Long skGoodsId, Long userId) {
         String userBuyCountKey = String.format(SkConstant.SK_USER_BUY_COUNT, skGoodsId, userId);
-        if(redisUtil.redisTemplate.hasKey(userBuyCountKey)) {
-            return redisUtil.getCacheObject(userBuyCountKey);
+        RBucket<Long> bucket = redissonClient.getBucket(userBuyCountKey);
+        if(bucket.isExists()) {
+            return bucket.get();
         }
         return 0;
     }

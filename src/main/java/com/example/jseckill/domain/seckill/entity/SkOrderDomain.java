@@ -5,6 +5,8 @@ import com.example.jseckill.infrastructure.common.enums.OrderStatusEnum;
 import com.example.jseckill.infrastructure.framework.exception.ClientException;
 import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkOrder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -14,37 +16,36 @@ import java.time.format.DateTimeFormatter;
  * @author jianchengwang
  * @date 2023/4/1
  */
+@Data
+@NoArgsConstructor
 public class SkOrderDomain {
     private String skToken;
     private Long skGoodsId;
     private BigInteger skPrice;
     private BigInteger buyNum;
     private Long userId;
-    private SkRedisRepository redisRepository;
     private int tryTimes = 0;
 
-    public SkOrderDomain(String skToken, Long skGoodsId, BigInteger skPrice, BigInteger buyNum, Long userId, SkRedisRepository redisRepository) {
+    public SkOrderDomain(String skToken, Long skGoodsId, BigInteger skPrice, BigInteger buyNum, Long userId) {
         this.skToken = skToken;
         this.skGoodsId = skGoodsId;
         this.skPrice = skPrice;
         this.buyNum = buyNum;
         this.userId = userId;
-        this.redisRepository = redisRepository;
         this.skToken = skToken;
     }
 
-    public SkOrderDomain(SkOrder skOrder, SkRedisRepository redisRepository) {
+    public SkOrderDomain(SkOrder skOrder) {
         this.skGoodsId = skOrder.getSkGoodsId();
         this.skPrice = skOrder.getSkPrice();
         this.buyNum = skOrder.getBuyNum();
         this.userId = skOrder.getUserId();
-        this.redisRepository = redisRepository;
     }
 
-    public SkOrder createOrder() {
+    public SkOrder createOrder(SkRedisRepository redisRepository) {
         LocalDateTime nowTime = LocalDateTime.now();
         SkOrder skOrder = new SkOrder();
-        skOrder.setOrderNo(buildOrderNo(nowTime));
+        skOrder.setOrderNo(buildOrderNo(nowTime, redisRepository));
         skOrder.setSkGoodsId(skGoodsId);
         skOrder.setSkPrice(skPrice);
         skOrder.setUserId(userId);
@@ -67,7 +68,7 @@ public class SkOrderDomain {
     private final static DateTimeFormatter DayFormatter = DateTimeFormatter.ofPattern("yyMMdd");
     private final String OrderSeqFmt = "%s%s%05d";
     private final String OrderNoFmt = "%s%04d";
-    private String buildOrderNo(LocalDateTime nowTime) {
+    private String buildOrderNo(LocalDateTime nowTime, SkRedisRepository redisRepository) {
         LocalDateTime dayBegin = LocalDateTime.of(nowTime.getYear(), nowTime.getMonth(), nowTime.getDayOfMonth(), 0, 0, 0);
         //格式化当前时间为【年的后2位+月+日】
         String yymmddDateStr = DayFormatter.format(nowTime);
@@ -82,25 +83,25 @@ public class SkOrderDomain {
         return orderNo;
     }
 
-    public void addStock() {
+    public void addStock(SkRedisRepository redisRepository) {
         redisRepository.addSkGoodsStock(skGoodsId, buyNum.longValue());
     }
 
-    public void subStock() {
+    public void subStock(SkRedisRepository redisRepository) {
         if(redisRepository.subSkGoodsStock(skGoodsId, buyNum.longValue()) == -1) {
             throw new ClientException("库存不足", FrameworkErrorCode.LEGAL_REQUEST);
         }
     }
 
-    public void createOrderSuccess(String orderNo) {
+    public void createOrderSuccess(String orderNo, SkRedisRepository redisRepository) {
         redisRepository.createOrderSuccess(skToken, skGoodsId, buyNum.longValue(), userId, orderNo);
     }
 
-    public void createOrderFail() {
+    public void createOrderFail(SkRedisRepository redisRepository) {
         redisRepository.createOrderFail(skToken);
     }
 
-    public void createOrderCancel() {
+    public void createOrderCancel(SkRedisRepository redisRepository) {
         redisRepository.createOrderCancel(skGoodsId, userId, buyNum.longValue());
     }
 

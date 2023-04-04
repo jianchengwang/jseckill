@@ -1,10 +1,11 @@
-FROM openjdk:17-alpine:latest
+# FROM openjdk:17-alpine:latest
+FROM apache/skywalking-java-agent:8.14.0-java17
 
 RUN mkdir -p /jseckill
 
 WORKDIR /jseckill
 
-ARG JAR_FILE=target/jseckill.jar
+ARG JAR_FILE=../../build/libs/jseckill-0.0.1-SNAPSHOT.jar
 
 COPY ${JAR_FILE} app.jar
 

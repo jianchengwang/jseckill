@@ -29,19 +29,22 @@ public class SkOrderPaySuccessNotifyRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        while (true){
-            try {
-                SkPayDomain skPayDomain = redisRepository.popPaySuccessNotify();
-                //do some
-                if(skPayDomain == null) {
-                    continue;
+        log.info("SkOrderPaySuccessNotifyRunner start");
+        new Thread(() -> {
+            while (true){
+                try {
+                    SkPayDomain skPayDomain = redisRepository.popPaySuccessNotify();
+                    //do some
+                    if(skPayDomain == null) {
+                        continue;
+                    }
+                    executor.execute(new SkOrderPayNotifySuccessRunnable(skPayDomain));
+                    //do some
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
                 }
-                executor.execute(new SkOrderPayNotifySuccessRunnable(skPayDomain));
-                //do some
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
             }
-        }
+        }).start();
     }
 
     public class SkOrderPayNotifySuccessRunnable implements Runnable {
@@ -54,6 +57,7 @@ public class SkOrderPaySuccessNotifyRunner implements CommandLineRunner {
         public void run() {
             TransactionStatus tx = null;
             try {
+                log.info("Runner PayNotifySuccess:{}", skPayDomain);
                 tx = transactionManager.getTransaction(new DefaultTransactionDefinition());
                 orderRepository.payNotifySuccess(skPayDomain.getPayNotify());
                 transactionManager.commit(tx);

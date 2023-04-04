@@ -64,7 +64,8 @@ public class RedisCacheConfig {
         // 设置连接库
         singleServerConfig.setDatabase(redisProperties.getDatabase());
         //使用json序列化方式
-        Codec codec = new JsonJacksonCodec();
+        ObjectMapper objectMapper = buildObjectMapper();
+        Codec codec = new JsonJacksonCodec(objectMapper);
         conf.setCodec(codec);
         return Redisson.create(conf);
     }

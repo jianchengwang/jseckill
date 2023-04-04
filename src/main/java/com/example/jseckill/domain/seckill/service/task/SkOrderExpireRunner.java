@@ -25,18 +25,21 @@ public class SkOrderExpireRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        while (true){
-            try {
-                RBlockingQueue<Long> waitPayOrderQueue = redisRepository.getWaitPayOrderQueue();
-                Long orderId = waitPayOrderQueue.take();
-                if(orderId <= 0){
-                    continue;
+        log.info("SkOrderExpireRunner start");
+        new Thread(() -> {
+            while (true){
+                try {
+                    RBlockingQueue<Long> waitPayOrderQueue = redisRepository.getWaitPayOrderQueue();
+                    Long orderId = waitPayOrderQueue.take();
+                    if(orderId <= 0){
+                        continue;
+                    }
+                    executor.execute(new OrderExpireRunnable(orderId));
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
                 }
-                executor.execute(new OrderExpireRunnable(orderId));
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
             }
-        }
+        }).start();
     }
 
     public class OrderExpireRunnable implements Runnable {
@@ -47,6 +50,7 @@ public class SkOrderExpireRunner implements CommandLineRunner {
         @Override
         public void run() {
             try {
+                log.info("Runner CancelOrder:{}", orderId);
                 orderService.cancelOrder(orderId);
             } catch (Exception e) {
                 log.error(e.getMessage(),e);

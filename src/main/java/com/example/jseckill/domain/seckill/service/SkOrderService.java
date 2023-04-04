@@ -25,7 +25,7 @@ public class SkOrderService {
     @Transactional(rollbackFor = Throwable.class)
     public void cancelOrder(Long orderId) {
         SkOrder skOrder = orderRepository.findById(orderId);
-        if(skOrder.getOrderStatus() != OrderStatusEnum.NEW) {
+        if(skOrder.getOrderStatus() != OrderStatusEnum.NEW || skOrder.getOrderStatus() != OrderStatusEnum.PAY_CONFIRM) {
             return;
         }
         // 如果已经进入支付回调，不再取消订单
@@ -33,11 +33,11 @@ public class SkOrderService {
             orderRepository.updateOrderStatus(orderId, OrderStatusEnum.PAY_SUCCESS_WAIT);
             return;
         }
-        SkOrderDomain skOrderDomain = new SkOrderDomain(skOrder, redisRepository);
+        SkOrderDomain skOrderDomain = new SkOrderDomain(skOrder);
         orderRepository.updateOrderStatus(orderId, OrderStatusEnum.CANCEL);
         // 库存回滚
-        skOrderDomain.addStock();
+        skOrderDomain.addStock(redisRepository);
         // 取消订单
-        skOrderDomain.createOrderCancel();
+        skOrderDomain.createOrderCancel(redisRepository);
     }
 }

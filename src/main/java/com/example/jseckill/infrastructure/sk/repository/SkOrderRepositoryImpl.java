@@ -3,6 +3,7 @@ package com.example.jseckill.infrastructure.sk.repository;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.jseckill.domain.seckill.repository.SkOrderRepository;
+import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.common.enums.OrderStatusEnum;
 import com.example.jseckill.infrastructure.common.enums.PayMethodEnum;
 import com.example.jseckill.infrastructure.framework.exception.ClientException;
@@ -26,6 +27,7 @@ import java.math.BigInteger;
 @RequiredArgsConstructor
 public class SkOrderRepositoryImpl extends ServiceImpl<SkOrderDao, SkOrder> implements SkOrderRepository {
     private final SkOrderDao skOrderDao;
+    private final SkRedisRepository redisRepository;
 
     @Override
     public SkOrder findById(Long id) {
@@ -71,6 +73,7 @@ public class SkOrderRepositoryImpl extends ServiceImpl<SkOrderDao, SkOrder> impl
         updateObj.setId(id);
         updateObj.setPayMethod(payMethod);
         updateObj.setPayMoney(payMoney);
+        updateObj.setOrderStatus(OrderStatusEnum.PAY_CONFIRM);
         skOrderDao.updateById(updateObj);
     }
 
@@ -79,7 +82,7 @@ public class SkOrderRepositoryImpl extends ServiceImpl<SkOrderDao, SkOrder> impl
     public void payNotifySuccess(PayNotifyDTO payNotify) {
         String orderNo = payNotify.getOutTradeNo();
         SkOrder skOrder = findByOrderNo(orderNo);
-        if(skOrder.getOrderStatus() != OrderStatusEnum.NEW) {
+        if(skOrder.getOrderStatus() != OrderStatusEnum.PAY_CONFIRM) {
             throw new ClientException("订单状态不正确", FrameworkErrorCode.RESOURCE_NOT_FOUND);
         }
         SkOrder updateObj = new SkOrder();
@@ -88,5 +91,6 @@ public class SkOrderRepositoryImpl extends ServiceImpl<SkOrderDao, SkOrder> impl
         updateObj.setPayTransactionId(payNotify.getPayTransactionId());
         updateObj.setOrderStatus(OrderStatusEnum.PAY_SUCCESS);
         skOrderDao.updateById(updateObj);
+        redisRepository.paySuccess(skOrder.getSkGoodsId(), skOrder.getUserId());
     }
 }

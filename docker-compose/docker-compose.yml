@@ -1,0 +1,62 @@
+version: '3.3'
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+   sk_mysql_data:
+     external: true
+   sk_redis_data:
+     external: true
+
+services:
+  jseckill-mysql:
+    build:
+      context: ./mysql
+    environment:
+      TZ: Asia/Shanghai
+      LANG: C.UTF-8
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_PASSWORD: root
+    restart: always
+    container_name: jseckill-mysql
+    image: jseckill-mysql
+    ports:
+      - 13306:3306
+    volumes:
+      - sk_mysql_data:/var/lib/mysql
+    networks:
+      - backend
+
+  jseckill-redis:
+    image: redis:7.0.0
+    ports:
+      - 16379:6379
+    restart: always
+    container_name: jseckill-redis
+    hostname: jseckill-redis
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - sk_redis_data:/data
+    networks:
+      - backend
+
+#  jseckill:
+#    build:
+#      context: ./jseckill
+#    restart: always
+#    ports:
+#      - 9071:9071
+#    container_name: jseckill
+#    hostname: jseckill
+#    image: jseckill
+#    networks:
+#      - backend
+#    links:
+#      - jseckill-mysql
+#      - jseckill-redis
+#    depends_on:
+#      - jseckill-mysql
+#      - jseckill-redis

@@ -26,9 +26,9 @@ public class SkGoodsApplication {
 
     public void preheat(Long skGoodsId, SkGoodsPreheatDTO preheatParam) {
         SkGoods skGoods = skGoodsRepository.findById(skGoodsId);
-        if(skGoods.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new ClientException("秒杀活动已经开始，不能再修改", FrameworkErrorCode.PARAM_VALIDATE_ERROR);
-        }
+//        if(skGoods.getStartTime().isBefore(LocalDateTime.now())) {
+//            throw new ClientException("秒杀活动已经开始，不能再修改", FrameworkErrorCode.PARAM_VALIDATE_ERROR);
+//        }
         skGoodsRepository.preheat(skGoodsId, preheatParam);
         redisRepository.preheatSkGoods(skGoods);
     }

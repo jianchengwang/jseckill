@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +27,7 @@ import java.util.concurrent.Executors;
 @RestController
 @RequestMapping("/api/client/seckill")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "客户端-秒杀模块")
 public class SeckillController {
 
@@ -83,7 +85,9 @@ public class SeckillController {
         @Override
         public void run() {
             try {
-                restTemplate.postForObject(payUrl, wxPayInfoDTO, Response.class);
+                log.info("submit payinfo: {}", wxPayInfoDTO);
+                Response response = restTemplate.postForObject(payUrl, wxPayInfoDTO, Response.class);
+                log.info("pay result: {}", response);
             } catch (Exception e) {
                 e.printStackTrace();
             }

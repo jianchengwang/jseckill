@@ -12,7 +12,7 @@ Content-Type: application/json
         client.assert(response.status === 200, "Response status is not 200");
     });
     client.global.set("userToken", response.body.data);
-    client.global.set("skGoodsId", "2");
+    client.global.set("skGoodsId", "1");
 %}
 
 ### 获取商品信息
@@ -23,7 +23,7 @@ Content-Type: application/json
 %}
 
 ### 获取令牌
-GET {{client_url}}/seckill/token/{{skGoodsId}}?entryKey=123456
+GET {{client_url}}/seckill/token/{{skGoodsId}}?entryKey=djingd!
 Content-Type: application/json
 Authorization: {{userToken}}
 
@@ -40,9 +40,9 @@ Content-Type: application/json
 Authorization: {{userToken}}
 
 {
-  "skToken": {{skToken}},
+  "skToken": "{{skToken}}",
   "skGoodsId": {{skGoodsId}},
-  "buyNum": 1
+  "buyNum": 3
 }
 
 > {%
@@ -63,12 +63,12 @@ Authorization: {{userToken}}
 %}
 
 ### 确认支付信息
-GET {{client_url}}/seckill/order/confirmPayInfo
+POST {{client_url}}/seckill/order/confirmPayInfo
 Content-Type: application/json
 Authorization: {{userToken}}
 
 {
-  "orderNo": {{orderNo}},
+  "orderNo": "{{orderNo}}",
   "payMethod": "WECHAT",
   "payMoney": 5000
 }

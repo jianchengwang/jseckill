@@ -6,6 +6,8 @@ import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaStrategy;
 import com.example.jseckill.infrastructure.common.enums.UserScopeEnum;
+import com.example.jseckill.infrastructure.framework.exception.ClientException;
+import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.method.HandlerMethod;
@@ -23,7 +25,7 @@ public class SatokenHandlerInterceptor extends SaInterceptor {
         this.auth = handler -> {
             SaRouter.match("/api/**", "", r -> StpUtil.checkLogin());
             SaRouter.match("/api/client/**", r -> StpUtil.checkRole(UserScopeEnum.CLIENT.getRole()));
-            SaRouter.match("/api/operate/**", r -> StpUtil.checkPermission(UserScopeEnum.OPERATE.getRole()));
+            SaRouter.match("/api/operate/**", r -> StpUtil.checkRole(UserScopeEnum.OPERATE.getRole()));
         };
     }
 
@@ -41,7 +43,8 @@ public class SatokenHandlerInterceptor extends SaInterceptor {
                 this.auth.run(handler);
             }
         } catch (Exception e) {
-            return false;
+            e.printStackTrace();
+            throw new ClientException(FrameworkErrorCode.USER_NOT_PERMISSION);
         }
         return true;
     }

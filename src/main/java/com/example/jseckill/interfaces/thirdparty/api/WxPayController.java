@@ -1,5 +1,6 @@
 package com.example.jseckill.interfaces.thirdparty.api;
 
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.hutool.core.lang.UUID;
 import com.example.jseckill.infrastructure.framework.exception.ClientException;
 import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
@@ -9,6 +10,7 @@ import com.example.jseckill.interfaces.thirdparty.dto.WxPayNotifyDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +29,7 @@ import java.util.concurrent.Executors;
 @RestController
 @RequestMapping("/api/thirdparty/wxpay")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "第三方服务-微信支付中心")
 public class WxPayController {
 
@@ -34,14 +37,16 @@ public class WxPayController {
     private final ExecutorService notifyExecutor = Executors.newFixedThreadPool(5);
 
     @PostMapping("")
+    @SaIgnore
     public Response<Void> pay(@Valid @RequestBody WxPayInfoDTO wxPayInfoParam) {
+        log.info("receive pay request, wxPayInfoParam: {}", wxPayInfoParam);
         LocalDateTime payTime = LocalDateTime.now();
         // 校验签名
         String sign = wxPayInfoParam.getSign();
         // 校验是否超时
         LocalDateTime expireTime = wxPayInfoParam.getExpireTime();
         if(expireTime!=null && expireTime.isBefore(payTime)) {
-            throw new ClientException("订单已超时", FrameworkErrorCode.PARAM_VALIDATE_ERROR);
+            return Response.fail(new ClientException("订单已超时", FrameworkErrorCode.PARAM_VALIDATE_ERROR));
         }
         WxPayNotifyDTO wxPayNotify = new WxPayNotifyDTO();
         wxPayNotify.setOutTradeNo(wxPayInfoParam.getOutTradeNo());
@@ -51,6 +56,7 @@ public class WxPayController {
         wxPayNotify.setSuccess(true);
         wxPayNotify.setSign("sign");
         // 通知业务方
+        log.info("notify business, wxPayNotify: {}", wxPayNotify);
         notifyExecutor.execute(new NotifyBackendRunnable(wxPayInfoParam.getBackendNotifyUrl(), wxPayNotify));
         return Response.ok();
     }
@@ -69,7 +75,8 @@ public class WxPayController {
                 // 重试三次后丢弃
                 while (tryTimes < 3) {
                     Response<String> result = restTemplate.postForObject(backendNotifyUrl, wxPayNotify, Response.class);
-                    if(result!=null && result.getStatus() == 200 && StringUtils.equals(result.getData(), "OK")) {
+                    log.info("business notify result: {}", result);
+                    if(result!=null && result.getStatus() == 200 && StringUtils.equals(result.getData(), "SUCCESS")) {
                         break;
                     }
                     tryTimes++;

@@ -52,8 +52,8 @@ public class SeckillApplication {
         SkGoodsDomain skGoodsDomain = new SkGoodsDomain(skGoods);
         skGoodsDomain.validate();
         // 校验密钥并返回令牌
-        SkUserDomain skUserDomain = new SkUserDomain(userId, skGoodsId, entryKey, redisRepository);
-        return skUserDomain.validateEntryKeyAndGetToken(skGoods.getEntryKey());
+        SkUserDomain skUserDomain = new SkUserDomain(userId, skGoodsId, entryKey);
+        return skUserDomain.validateEntryKeyAndGetToken(skGoods.getEntryKey(), redisRepository);
     }
 
     public void createOrder(CreateOrderDTO createOrderParam) {
@@ -65,21 +65,22 @@ public class SeckillApplication {
         SkGoodsDomain skGoodsDomain = new SkGoodsDomain(skGoods);
         skGoodsDomain.validate();
         // 校验令牌
-        SkUserDomain skUserDomain = new SkUserDomain(createOrderParam, redisRepository);
+        SkUserDomain skUserDomain = new SkUserDomain(createOrderParam);
         String skToken = createOrderParam.getSkToken();
         // 校验用户是否可以购买
-        skUserDomain.validateCanBuy(skToken, skGoods.getBuyLimit());
+        skUserDomain.validateCanBuy(skToken, buyNum, skGoods.getBuyLimit(), redisRepository);
         // 创建订单
-        SkOrderDomain skOrderDomain = new SkOrderDomain(skToken, skGoodsId, skGoods.getSkPrice(), buyNum, userId, redisRepository);
+        SkOrderDomain skOrderDomain = new SkOrderDomain(skToken, skGoodsId, skGoods.getSkPrice(), buyNum, userId);
         // 预减库存
-        skOrderDomain.subStock();
+        skOrderDomain.subStock(redisRepository);
         // 推送订单到队列
         try {
             redisRepository.pushSkOrder(skOrderDomain);
         } catch (Exception e) {
+            e.printStackTrace();
             // 推送失败，回滚库存
-            skOrderDomain.addStock();
-            throw new ClientException("活动火爆，请稍后再试", FrameworkErrorCode.LEGAL_REQUEST);
+            skOrderDomain.addStock(redisRepository);
+            throw new ClientException("活动火爆，请稍后再试", FrameworkErrorCode.LEGAL_REQUEST, e);
         }
     }
 
@@ -92,7 +93,7 @@ public class SeckillApplication {
         PayMethodEnum payMethod = confirmPayInfoParam.getPayMethod();
         BigInteger payMoney = confirmPayInfoParam.getPayMoney();
         SkOrder skOrder = orderRepository.findByOrderNo(orderNo);
-        SkOrderDomain skOrderDomain = new SkOrderDomain(skOrder, redisRepository);
+        SkOrderDomain skOrderDomain = new SkOrderDomain(skOrder);
         skOrderDomain.confirmPayInfo(payMoney);
         orderRepository.confirmPayInfo(skOrder.getId(), payMethod, payMoney);
 

@@ -34,18 +34,21 @@ public class SkOrderCreateRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        while (true){
-            try {
-                SkOrderDomain skOrderDomain = redisRepository.popSkOrder();
-                //do some
-                if(skOrderDomain == null) {
-                    continue;
+        log.info("SkOrderCreateRunner start");
+        new Thread(() -> {
+            while (true){
+                try {
+                    SkOrderDomain skOrderDomain = redisRepository.popSkOrder();
+                    //do some
+                    if(skOrderDomain == null) {
+                        continue;
+                    }
+                    executor.execute(new OrderCreateRunnable(skOrderDomain));
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
                 }
-                executor.execute(new OrderCreateRunnable(skOrderDomain));
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
             }
-        }
+        }).start();
     }
     public class OrderCreateRunnable implements Runnable {
         private final SkOrderDomain skOrderDomain;
@@ -56,9 +59,10 @@ public class SkOrderCreateRunner implements CommandLineRunner {
         public void run() {
             TransactionStatus tx = null;
             try {
+                log.info("Runner createOrder:{}", skOrderDomain);
                 // 开启事务
                 tx = transactionManager.getTransaction(new DefaultTransactionDefinition());
-                SkOrder skOrder = skOrderDomain.createOrder();
+                SkOrder skOrder = skOrderDomain.createOrder(redisRepository);
                 // 创建订单
                 orderRepository.createOrder(skOrder);
                 // 乐观锁扣减库存
@@ -66,12 +70,12 @@ public class SkOrderCreateRunner implements CommandLineRunner {
                 if(!subStockSuccess) {
                     throw new ClientException("扣减库存失败", FrameworkErrorCode.SERVER_ERROR);
                 }
-                // 提交事务
-                transactionManager.commit(tx);
+                // 创建成功
+                skOrderDomain.createOrderSuccess(skOrder.getOrderNo(), redisRepository);
                 // 推入待支付队列
                 redisRepository.pushWaitPayOrder(skOrder.getId());
-                // 创建成功
-                skOrderDomain.createOrderSuccess(skOrder.getOrderNo());
+                // 提交事务
+                transactionManager.commit(tx);
            } catch (Exception e) {
                log.error(e.getMessage(),e);
                // 回滚事务
@@ -83,8 +87,8 @@ public class SkOrderCreateRunner implements CommandLineRunner {
                    redisRepository.pushSkOrder(skOrderDomain);
                } else {
                    // 失败标志
-                   skOrderDomain.addStock();
-                   skOrderDomain.createOrderFail();
+                   skOrderDomain.addStock(redisRepository);
+                   skOrderDomain.createOrderFail(redisRepository);
                }
            }
         }

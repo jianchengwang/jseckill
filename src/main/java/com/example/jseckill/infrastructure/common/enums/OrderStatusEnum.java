@@ -8,9 +8,10 @@ import com.example.jseckill.infrastructure.framework.pojo.IBaseEnum;
  */
 public enum OrderStatusEnum implements IBaseEnum<Integer> {
     NEW(0, "新建订单"),
-    PAY_SUCCESS(1, "支付完成"),
-    PAY_SUCCESS_WAIT(2, "支付完成，待处理"),
-    CANCEL(3, "取消订单"),
+    PAY_CONFIRM(1, "支付确认"),
+    PAY_SUCCESS(2, "支付完成"),
+    PAY_SUCCESS_WAIT(3, "支付完成，待处理"),
+    CANCEL(4, "取消订单"),
     ;
 
     private final Integer value;
