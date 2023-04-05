@@ -47,7 +47,7 @@ create table t_sk_order
     pay_money          bigint             default 0 not null comment '支付金额',
     pay_time           datetime           null comment '支付时间',
     pay_method         smallint default 0 not null comment '支付方式，0：未支付，1：支付宝，2：微信',
-    pay_transaction_id varchar(128)        not null comment '支付流水',
+    pay_transaction_id varchar(128)       null comment '支付流水',
     user_id            bigint             not null comment '用户编号',
     order_status       smallint default 0 not null comment '订单状态'
 )

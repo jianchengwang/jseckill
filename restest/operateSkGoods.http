@@ -25,7 +25,7 @@ Authorization: {{operateToken}}
     "skPrice": 5000,
     "skNum": 1000,
     "startTime": "2023-04-04 11:35:00",
-    "endTime": "2023-04-05 11:00:00"
+    "endTime": "2023-04-10 11:00:00"
 }
 
 > {%

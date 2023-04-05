@@ -43,14 +43,14 @@ services:
     networks:
       - backend
 
-#  jseckill:
+#  jseckill-service:
 #    build:
-#      context: ./jseckill
+#      context: ./jseckill-service
 #    restart: always
 #    ports:
 #      - 9071:9071
-#    container_name: jseckill
-#    hostname: jseckill
+#    container_name: jseckill-service
+#    hostname: jseckill-service
 #    image: jseckill
 #    networks:
 #      - backend

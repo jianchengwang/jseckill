@@ -6,8 +6,9 @@
 2. docker-compose: docker-compose文件
 3. docs: 文档
 4. restest: http-client 接口测试
-5. src: 源码
-6. webpage: 前端页面
+5. jseckill-service: 秒杀源码
+6. jseckill-gatling: 性能测试
+7. webpage: 前端页面
 
 ## 注意
 纯属个人学习，请勿用于生产环境

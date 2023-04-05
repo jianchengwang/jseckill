@@ -65,5 +65,5 @@ skywalking-ui: `http://localhost:13800`
 grafana: `http://localhost:3000`
 
 ### 本地开发使用skywalking
-vm: -javaagent:D:\serve\skywalking-agent\skywalking-agent.jar -Dskywalking.collector.backend_service=127.0.0.1:11800 -Dskywalking.agent.service_name=jseckill
+vm: -javaagent:D:\serve\skywalking-agent\skywalking-agent.jar -Dskywalking.collector.backend_service=127.0.0.1:11800 -Dskywalking.agent.service_name=jseckill-service
 

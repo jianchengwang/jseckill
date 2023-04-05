@@ -14,6 +14,14 @@ Content-Type: application/json
     client.global.set("operateToken", response.body.data);
 %}
 
+### 清空数据
+POST {{operate_url}}/test/clearData
+Content-Type: application/json
+Authorization: {{operateToken}}
+
+> {%
+%}
+
 ### 创建测试用户
 POST {{operate_url}}/test/generateUser?num=1000
 Content-Type: application/json
