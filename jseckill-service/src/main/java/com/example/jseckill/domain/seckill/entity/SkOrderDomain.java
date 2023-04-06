@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jianchengwang
@@ -24,7 +25,7 @@ public class SkOrderDomain {
     private BigInteger skPrice;
     private BigInteger buyNum;
     private Long userId;
-    private int tryTimes = 0;
+    private volatile AtomicInteger tryTimes = new AtomicInteger(0);
 
     public SkOrderDomain(String skToken, Long skGoodsId, BigInteger skPrice, BigInteger buyNum, Long userId) {
         this.skToken = skToken;
@@ -61,17 +62,16 @@ public class SkOrderDomain {
     }
 
     public int incrTryTimes() {
-        tryTimes++;
-        return tryTimes;
+        return tryTimes.decrementAndGet();
     }
 
-    private final static DateTimeFormatter DayFormatter = DateTimeFormatter.ofPattern("yyMMdd");
+    private final static DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
     private final String OrderSeqFmt = "%s%s%05d";
     private final String OrderNoFmt = "%s%04d";
     private String buildOrderNo(LocalDateTime nowTime, SkRedisRepository redisRepository) {
         LocalDateTime dayBegin = LocalDateTime.of(nowTime.getYear(), nowTime.getMonth(), nowTime.getDayOfMonth(), 0, 0, 0);
         //格式化当前时间为【年的后2位+月+日】
-        String yymmddDateStr = DayFormatter.format(nowTime);
+        String yymmddDateStr = DAY_FORMATTER.format(nowTime);
         //计算当前时间走过的秒
         long differSecond = (nowTime.getSecond() - dayBegin.getSecond());
         //获取【业务编码】 + 【年的后2位+月+日+秒】，作为自增key；

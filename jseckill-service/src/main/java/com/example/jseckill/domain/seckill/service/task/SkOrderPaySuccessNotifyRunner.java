@@ -48,6 +48,7 @@ public class SkOrderPaySuccessNotifyRunner implements CommandLineRunner {
     }
 
     public class SkOrderPayNotifySuccessRunnable implements Runnable {
+        private final int MaxTryTimes = 3;
         private final SkPayDomain skPayDomain;
 
         public SkOrderPayNotifySuccessRunnable(SkPayDomain skPayDomain){
@@ -68,8 +69,7 @@ public class SkOrderPaySuccessNotifyRunner implements CommandLineRunner {
                     transactionManager.rollback(tx);
                 }
                 // 重试三次
-                int maxTryTimes = 3;
-                if(skPayDomain.incrTryTimes() < maxTryTimes) {
+                if(skPayDomain.incrTryTimes() < MaxTryTimes) {
                     redisRepository.pushPaySuccessNotify(skPayDomain);
                 }
             }

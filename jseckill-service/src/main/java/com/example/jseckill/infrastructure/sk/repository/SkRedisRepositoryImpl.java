@@ -15,6 +15,7 @@ import org.redisson.api.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +30,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
 
     private final RedissonClient redissonClient;
     private final long TimeoutDays = 7;
+    private final long TimeoutMinutes = 30;
 
     @Override
     public boolean hasSkToken(Long skGoodsId, Long userId) {
@@ -43,7 +45,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
         RBucket<String> bucket = redissonClient.getBucket(skTokenKey);
         if(!bucket.isExists()) {
             String skToken = UUID.fastUUID().toString(true);
-            bucket.set(skToken, 5, TimeUnit.MINUTES);
+            bucket.set(skToken, TimeoutMinutes, TimeUnit.MINUTES);
             return skToken;
         }
         return bucket.get();
@@ -53,19 +55,18 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     public void preheatSkGoods(SkGoods skGoods) {
         Long skGoodsId = skGoods.getId();
         BigInteger stockNum = skGoods.getStockNum();
-        RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        RBucket<Long> skGoodsStock = transaction.getBucket(skGoodsStockKey);
-        skGoodsStock.set(stockNum.longValue(), TimeoutDays, TimeUnit.DAYS);
-        transaction.commit();
+        RAtomicLong stock = redissonClient.getAtomicLong(skGoodsStockKey);
+        stock.set(stockNum.longValue());
+        stock.expire(Duration.ofDays(TimeoutDays));
     }
 
     @Override
     public BigInteger getSkGoodsStockNum(Long skGoodsId) {
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        RBucket<Long> skGoodsStock = redissonClient.getBucket(skGoodsStockKey);
-        if(skGoodsStock.isExists()) {
-            return BigInteger.valueOf(skGoodsStock.get());
+        RAtomicLong stock = redissonClient.getAtomicLong(skGoodsStockKey);
+        if(stock.isExists()) {
+            return BigInteger.valueOf(stock.get());
         }
         return BigInteger.ZERO;
     }
@@ -73,39 +74,30 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public long addSkGoodsStock(Long skGoodsId, long addStock) {
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
-        RBucket<Long> bucket = redissonClient.getBucket(skGoodsStockKey);
-        if(!bucket.isExists()) {
+        RAtomicLong stock = redissonClient.getAtomicLong(skGoodsStockKey);
+        if(!stock.isExists()) {
             throw new ClientException("redis skGoodsStock not exists", FrameworkErrorCode.SERVER_ERROR, skGoodsId, addStock);
         }
-        long stock = bucket.get() + addStock;
-        bucket.set(stock, TimeoutDays, TimeUnit.DAYS);
-        transaction.commit();
-        return stock;
+        stock.expire(Duration.ofDays(TimeoutDays));
+        return stock.addAndGet(addStock);
     }
 
     @Override
     public long subSkGoodsStock(Long skGoodsId, long subStock) {
         String skGoodsStockKey = String.format(SkConstant.SK_GOODS_STOCK, skGoodsId);
-        RTransaction transaction = redissonClient.createTransaction(TransactionOptions.defaults());
-        RBucket<Long> bucket = transaction.getBucket(skGoodsStockKey);
-        if(!bucket.isExists()) {
+        RAtomicLong stock = redissonClient.getAtomicLong(skGoodsStockKey);
+        if(!stock.isExists()) {
             throw new ClientException("redis skGoodsStock not exists", FrameworkErrorCode.SERVER_ERROR, skGoodsId, subStock);
         }
-        long stock = bucket.get() - subStock;
-        if(stock < 0) {
-            stock = -1;
-        } else {
-            bucket.set(stock, TimeoutDays, TimeUnit.DAYS);
-        }
-        transaction.commit();
-        return stock;
+        stock.expire(Duration.ofDays(TimeoutDays));
+        return stock.addAndGet(-subStock);
     }
 
     @Override
     public long incrSkOrderSeq(String orderSeq) {
         String orderSeqKey = String.format(SkConstant.SK_ORDER_SEQ, orderSeq);
         RAtomicLong skOrderSeq = redissonClient.getAtomicLong(orderSeqKey);
+        skOrderSeq.expire(Duration.ofMinutes(TimeoutMinutes));
         return skOrderSeq.incrementAndGet();
     }
 
@@ -113,6 +105,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     public void pushSkOrder(SkOrderDomain skOrder) {
         RBoundedBlockingQueue<SkOrderDomain> queue = redissonClient.getBoundedBlockingQueue(SkConstant.SK_ORDER_CREATE_QUEUE);
         queue.trySetCapacity(SkConstant.SK_ORDER_QUEUE_CAPACITY);
+        queue.expire(Duration.ofMinutes(TimeoutMinutes));
         try {
             queue.put(skOrder);
         } catch (InterruptedException e) {
@@ -124,7 +117,6 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public SkOrderDomain popSkOrder() {
         RBoundedBlockingQueue<SkOrderDomain> queue = redissonClient.getBoundedBlockingQueue(SkConstant.SK_ORDER_CREATE_QUEUE);
-        queue.trySetCapacity(SkConstant.SK_ORDER_QUEUE_CAPACITY);
         try {
             return queue.take();
         } catch (InterruptedException e) {
@@ -147,12 +139,14 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     public void pushWaitPayOrder(Long orderId) {
         RBlockingQueue<Long> blockingFairQueue = redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
         RDelayedQueue<Long> delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
-        delayedQueue.offer(orderId,5, TimeUnit.MINUTES);
+        delayedQueue.offer(orderId,TimeoutMinutes, TimeUnit.MINUTES);
     }
 
     @Override
     public RBlockingQueue<Long> getWaitPayOrderQueue() {
-        return redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
+        RBlockingQueue<Long> queue = redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
+        queue.expire(Duration.ofMinutes(TimeoutMinutes));
+        return queue;
     }
 
     @Override
@@ -162,22 +156,22 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
         String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, skGoodsId, userId);
         RBucket<Long> waitPayBucket = transaction.getBucket(waitPayCountKey);
         if(waitPayBucket.isExists()) {
-            waitPayBucket.set(waitPayBucket.get() + 1);
+            waitPayBucket.set(waitPayBucket.get() + 1, TimeoutDays, TimeUnit.DAYS);
         } else {
-            waitPayBucket.set(1L);
+            waitPayBucket.set(1L, TimeoutDays, TimeUnit.DAYS);
         }
         // 购买成功数量+1
         String userBuyCountKey = String.format(SkConstant.SK_USER_BUY_COUNT, skGoodsId, userId);
         RBucket<Long> userBuyCount = transaction.getBucket(userBuyCountKey);
         if(userBuyCount.isExists()) {
-            userBuyCount.set(userBuyCount.get() + buyNum);
+            userBuyCount.set(userBuyCount.get() + buyNum, TimeoutDays, TimeUnit.DAYS);
         } else {
-            userBuyCount.set(buyNum);
+            userBuyCount.set(buyNum, TimeoutDays, TimeUnit.DAYS);
         }
         // 创建订单成功标识
         String skOrderCreateSuccessKey = String.format(SkConstant.SK_ORDER_CREATE_SUCCESS, skToken);
         RBucket<String> createSuccessBucket = transaction.getBucket(skOrderCreateSuccessKey);
-        createSuccessBucket.set(orderNo);
+        createSuccessBucket.set(orderNo, TimeoutMinutes, TimeUnit.MINUTES);
         // 提交事务
         transaction.commit();
     }
@@ -196,13 +190,13 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
         String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, skGoodsId, userId);
         RBucket<Long> waitPayBucket = transaction.getBucket(waitPayCountKey);
         if(waitPayBucket.isExists()) {
-            waitPayBucket.set(waitPayBucket.get() - 1);
+            waitPayBucket.set(waitPayBucket.get() - 1, TimeoutDays, TimeUnit.DAYS);
         }
         // 购买成功数量-1
         String userBuyCountKey = String.format(SkConstant.SK_USER_BUY_COUNT, skGoodsId, userId);
         RBucket<Long> userBuyCount = transaction.getBucket(userBuyCountKey);
         if(userBuyCount.isExists()) {
-            userBuyCount.set(userBuyCount.get() - buyNum);
+            userBuyCount.set(userBuyCount.get() - buyNum, TimeoutDays, TimeUnit.DAYS);
         }
         // 提交事务
         transaction.commit();
@@ -215,7 +209,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
         String waitPayCountKey = String.format(SkConstant.SK_USER_WAIT_PAY_COUNT, skGoodsId, userId);
         RBucket<Long> waitPayBucket = transaction.getBucket(waitPayCountKey);
         if(waitPayBucket.isExists()) {
-            waitPayBucket.set(waitPayBucket.get() - 1);
+            waitPayBucket.set(waitPayBucket.get() - 1, TimeoutDays, TimeUnit.DAYS);
         }
         // 提交事务
         transaction.commit();
@@ -235,6 +229,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     public void pushPayNotify(List<PayNotifyDTO> payNotifyList) {
         RBoundedBlockingQueue<PayNotifyDTO> queue = redissonClient.getBoundedBlockingQueue(SkConstant.SK_ORDER_PAY_NOTIFY_QUEUE);
         queue.trySetCapacity(SkConstant.SK_ORDER_QUEUE_CAPACITY);
+        queue.expire(Duration.ofMinutes(TimeoutMinutes));
         try {
             for(PayNotifyDTO payNotify: payNotifyList) {
                 queue.put(payNotify);
@@ -254,6 +249,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public void pushOrderPaySuccessSet(String orderNo) {
         RSet<String> set = redissonClient.getSet(SkConstant.SK_ORDER_PAY_SUCCESS_SET);
+        set.expire(Duration.ofMinutes(TimeoutMinutes));
         set.add(orderNo);
     }
 
@@ -277,6 +273,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     public void pushPaySuccessNotify(SkPayDomain skPayDomain) {
         RBoundedBlockingQueue<SkPayDomain> queue = redissonClient.getBoundedBlockingQueue(SkConstant.SK_ORDER_PAY_SUCCESS_NOTIFY_QUEUE);
         queue.trySetCapacity(SkConstant.SK_ORDER_QUEUE_CAPACITY);
+        queue.expire(Duration.ofMinutes(TimeoutMinutes));
         try {
             queue.put(skPayDomain);
         } catch (InterruptedException e) {

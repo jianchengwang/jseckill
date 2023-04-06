@@ -51,6 +51,7 @@ public class SkOrderCreateRunner implements CommandLineRunner {
         }).start();
     }
     public class OrderCreateRunnable implements Runnable {
+        private final int MaxTryTimes = 3;
         private final SkOrderDomain skOrderDomain;
         public OrderCreateRunnable(SkOrderDomain skOrderDomain){
             this.skOrderDomain = skOrderDomain;
@@ -83,7 +84,7 @@ public class SkOrderCreateRunner implements CommandLineRunner {
                     transactionManager.rollback(tx);
                 }
                // 重试三次
-               if(skOrderDomain.incrTryTimes() < 3) {
+               if(skOrderDomain.incrTryTimes() < MaxTryTimes) {
                    redisRepository.pushSkOrder(skOrderDomain);
                } else {
                    // 失败标志

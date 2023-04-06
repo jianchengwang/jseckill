@@ -3,6 +3,7 @@ package simulations
 import io.gatling.javaapi.core.*
 import io.gatling.javaapi.core.CoreDsl.*
 import io.gatling.javaapi.http.HttpDsl.*
+import requests.*
 import java.time.Duration
 
 class SeckillSimulation : Simulation() {
@@ -15,75 +16,43 @@ class SeckillSimulation : Simulation() {
 
     val userFeeder = csv("data/users.csv").circular()
 
-    private val scn = scenario("loginThenGetToken")
+    private val scn = scenario("seckill")
         .feed(userFeeder)
         .exec {
             session ->
                 session.set("skGoodsId", skGoodsId).set("entryKey", entryKey)
         }
-        .exec(http("Login By Username")
-                .post("/api/auth/user/loginByUsername")
-                .body(ElFileBody("bodies/LoginByUsername.json"))
-                .check(status().`is`(200))
-                .check(jsonPath("$.status").find().`is`("200"))
-                .check(jsonPath("$.data").find().saveAs("userToken"))
-        )
+        .exec(LoginByUsernameRequest.loginByUsername)
         .exec {
             session ->
                 session
         }
-        .pause(Duration.ofMillis(10))
-        .exec(http("Get GoodsInfo")
-                .get("/api/client/seckill/goodsInfo/#{skGoodsId}")
-                .header("Authorization", "#{userToken}")
-                .check(jsonPath("$.status").find().`is`("200"))
-        )
-        .exec(http("Get SkToken")
-                .get("/api/client/seckill/token/#{skGoodsId}?entryKey=#{entryKey}")
-                .header("Authorization", "#{userToken}")
-                .check(bodyString().saveAs( "RESPONSE_DATA" ))
-                .check(jsonPath("$.status").find().`is`("200"))
-                .check(jsonPath("$.data").find().saveAs("skToken"))
-        )
+        .pause(Duration.ofMillis(10), Duration.ofMillis(50))
+        .exec(GetGoodsInfoRequest.getGoodsInfo)
+        .exec(GetSkTokenRequest.getSkToken)
         .exec {
             session ->
             session
         }
-        .pause(Duration.ofMillis(10))
-        .exec(http("Create Order")
-                .post("/api/client/seckill/order")
-                .body(ElFileBody("bodies/CreateOrder.json"))
-                .header("Authorization", "#{userToken}")
-                .check(jsonPath("$.status").find().`is`("200"))
-
-        )
+        .pause(Duration.ofMillis(10), Duration.ofMillis(50))
+        .exec(CreateOrderRequest.createOrder)
         .pause(Duration.ofMillis(50))
         .doWhile { session -> session.getString("orderNo") == null || session.getString("orderNo") == "0" }.on(
-            exec(http("Check Order")
-                .get("/api/client/seckill/order/check/#{skToken}")
-                .header("Authorization", "#{userToken}")
-                .check(jsonPath("$.status").find().`is`("200"))
-                .check(jsonPath("$.data").find().saveAs("orderNo"))
-            )
-        ).exec({
-            session ->
-//                println(session.getString("orderNo"))
-                session
-        })
-        .pause(Duration.ofMillis(10))
+            exec(CheckOrderRequest.checkOrder)
+        ).exec { session ->
+//          println(session.getString("orderNo"))
+            session
+        }
+        .pause(Duration.ofMillis(10), Duration.ofMillis(50))
         .doIf { session -> session.getString("orderNo") != null && session.getString("orderNo") != "-1" }.then(
-            exec(http("Confirm PayInfo")
-                .post("/api/client/seckill/order/confirmPayInfo")
-                .body(ElFileBody("bodies/ConfirmPayInfo.json"))
-                .header("Authorization", "#{userToken}")
-                .check(jsonPath("$.status").find().`is`("200"))
-            )
+            exec(ConfirmPayInfoRequest.confirmPayInfo)
         )
 
     init {
         setUp(scn.injectOpen(
                 nothingFor(Duration.ofMillis(10)),
-                rampUsers(1000).during(Duration.ofSeconds(10))
+//                rampUsers(1000).during(Duration.ofSeconds(60)) // total-231103 p95-1129 p99-1304
+                  rampUsers(500).during(Duration.ofSeconds(60)) // total-3091 p50-101	p99-192
         )).protocols(protocol)
     }
 }

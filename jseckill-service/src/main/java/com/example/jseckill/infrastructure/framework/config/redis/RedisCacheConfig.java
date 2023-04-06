@@ -87,9 +87,9 @@ public class RedisCacheConfig {
     public CacheManager cacheManager(RedisConnectionFactory factory) {
         ObjectMapper objectMapper = buildObjectMapper();
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+        long timeoutDays = 7;
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                // 过期时间500秒
-                .entryTtl(Duration.ofDays(1))
+                .entryTtl(Duration.ofDays(timeoutDays))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.string()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer))
                 .disableCachingNullValues();

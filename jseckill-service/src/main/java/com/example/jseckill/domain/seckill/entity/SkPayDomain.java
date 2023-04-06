@@ -6,6 +6,8 @@ import com.example.jseckill.interfaces.client.dto.PayNotifyDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author jianchengwang
  * @date 2023/4/2
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SkPayDomain {
     private PayNotifyDTO payNotify;
-    private int tryTimes = 0;
+    private volatile AtomicInteger tryTimes = new AtomicInteger(0);
 
     public SkPayDomain(PayNotifyDTO payNotifyDTO) {
         this.payNotify = payNotifyDTO;
@@ -31,7 +33,6 @@ public class SkPayDomain {
     }
 
     public int incrTryTimes() {
-        tryTimes++;
-        return tryTimes;
+        return tryTimes.decrementAndGet();
     }
 }
