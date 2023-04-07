@@ -1,9 +1,9 @@
 package com.example.jseckill.interfaces.auth.vo;
 
-import com.example.jseckill.infrastructure.framework.pojo.VO;
-import com.example.jseckill.infrastructure.common.enums.UserStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.example.framework.config.permission.user.UserStatusEnum;
+import org.example.framework.pojo.VO;
 
 /**
  * @author jianchengwang

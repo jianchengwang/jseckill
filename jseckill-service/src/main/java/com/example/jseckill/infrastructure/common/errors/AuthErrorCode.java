@@ -1,6 +1,6 @@
 package com.example.jseckill.infrastructure.common.errors;
 
-import com.example.jseckill.infrastructure.framework.exception.ErrorCode;
+import org.example.framework.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 /**

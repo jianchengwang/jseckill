@@ -6,21 +6,19 @@ import com.example.jseckill.domain.seckill.repository.SkOrderRepository;
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.common.enums.OrderStatusEnum;
 import com.example.jseckill.infrastructure.common.enums.PayMethodEnum;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.dao.SkOrderDao;
 import com.example.jseckill.infrastructure.sk.db.po.SkOrder;
 import com.example.jseckill.interfaces.client.dto.PayNotifyDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author jianchengwang

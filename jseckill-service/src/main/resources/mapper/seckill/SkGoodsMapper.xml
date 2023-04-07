@@ -13,4 +13,14 @@
             and t1.stock_num > 0
         </where>
     </update>
+
+    <update id="loadCacheStock">
+        update t_sk_goods t1
+        <set>
+            t1.stock_num = #{cacheStock}
+        </set>
+        <where>
+            t1.id = #{id}
+        </where>
+    </update>
 </mapper>

@@ -1,11 +1,11 @@
 package com.example.jseckill.interfaces.operate.dto;
 
-import com.example.jseckill.infrastructure.framework.pojo.DTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.example.framework.pojo.DTO;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;

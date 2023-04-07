@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.example.framework.pojo.DTO;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "第三方服务-支付中心-微信支付信息参数")
 @Data
-public class WxPayInfoDTO {
+public class WxPayInfoDTO implements DTO {
     @Schema(description = "业务订单号")
     private String outTradeNo;
     @NotNull

@@ -5,6 +5,8 @@ pluginManagement {
 	}
 }
 rootProject.name = 'jseckill'
+include 'framework'
 include 'jseckill-service'
 include 'jseckill-gatling'
+include 'jseckill-thirdparty'
 

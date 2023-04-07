@@ -1,11 +1,11 @@
 package com.example.jseckill.domain.seckill.entity;
 
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.interfaces.client.dto.CreateOrderDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 
 import java.math.BigInteger;
 import java.util.Objects;

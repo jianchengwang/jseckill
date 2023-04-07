@@ -2,6 +2,7 @@ package com.example.jseckill.interfaces.thirdparty.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.example.framework.pojo.DTO;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "第三方服务-支付中心-微信支付回调信息")
 @Data
-public class WxPayNotifyDTO {
+public class WxPayNotifyDTO implements DTO {
     @Schema(description = "业务订单号")
     private String outTradeNo;
     @Schema(description = "支付时间")

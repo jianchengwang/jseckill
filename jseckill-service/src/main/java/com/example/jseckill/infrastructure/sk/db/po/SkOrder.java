@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.jseckill.infrastructure.common.enums.PayMethodEnum;
 import com.example.jseckill.infrastructure.common.enums.OrderStatusEnum;
-import com.example.jseckill.infrastructure.framework.pojo.PO;
 import lombok.Data;
+import org.example.framework.pojo.PO;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;

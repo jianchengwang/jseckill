@@ -2,13 +2,13 @@ package com.example.jseckill.interfaces.auth.api;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.example.jseckill.application.UserApplication;
-import com.example.jseckill.infrastructure.framework.pojo.Response;
 import com.example.jseckill.interfaces.auth.dto.LoginByUsernameDTO;
 import com.example.jseckill.interfaces.auth.vo.UserInfoVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.framework.pojo.Response;
 import org.springframework.web.bind.annotation.*;
 
 /**

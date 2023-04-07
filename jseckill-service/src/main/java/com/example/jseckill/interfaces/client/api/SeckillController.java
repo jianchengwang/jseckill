@@ -2,17 +2,18 @@ package com.example.jseckill.interfaces.client.api;
 
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.example.jseckill.application.SeckillApplication;
-import com.example.jseckill.infrastructure.framework.config.permission.user.TokenUserUtil;
-import com.example.jseckill.infrastructure.framework.pojo.Response;
 import com.example.jseckill.interfaces.client.dto.ConfirmPayInfoDTO;
 import com.example.jseckill.interfaces.client.dto.CreateOrderDTO;
 import com.example.jseckill.interfaces.client.vo.SkGoodsInfoVO;
+import com.example.jseckill.interfaces.thirdparty.client.ThirdPartyClient;
 import com.example.jseckill.interfaces.thirdparty.dto.WxPayInfoDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.framework.config.permission.user.TokenUserUtil;
+import org.example.framework.pojo.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -36,7 +37,10 @@ public class SeckillController {
 
     private final SeckillApplication seckillApplication;
 
-    private final RestTemplate restTemplate;
+//    private final RestTemplate restTemplate;
+
+    private final ThirdPartyClient thirdPartyClient;
+
     private final ExecutorService payExecutor = Executors.newFixedThreadPool(5);
 
     @Operation(summary = "获取商品信息", description = "获取商品信息")
@@ -87,9 +91,15 @@ public class SeckillController {
         @Override
         public void run() {
             try {
-                log.info("submit payinfo: {}", wxPayInfoDTO);
-                Response response = restTemplate.postForObject(payUrl, wxPayInfoDTO, Response.class);
-                log.info("pay result: {}", response);
+                // random 50% success
+                if(Math.random() > 0.5) {
+                    log.info("submit payinfo: {}", wxPayInfoDTO);
+                    Response response = thirdPartyClient.wxpay(wxPayInfoDTO);
+//                Response response = restTemplate.postForObject(payUrl, wxPayInfoDTO, Response.class);
+                    log.info("pay result: {}", response);
+                } else {
+                    log.info("submit payinfo failed: {}", wxPayInfoDTO);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

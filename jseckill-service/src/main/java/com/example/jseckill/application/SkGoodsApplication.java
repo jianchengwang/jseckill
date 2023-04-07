@@ -2,8 +2,6 @@ package com.example.jseckill.application;
 
 import com.example.jseckill.domain.seckill.repository.SkGoodsRepository;
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsCreateDTO;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsPreheatDTO;
@@ -11,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.math.BigInteger;
 
 /**
  * @author jianchengwang
@@ -35,5 +33,10 @@ public class SkGoodsApplication {
 
     public Long createGoods(SkGoodsCreateDTO skGoodsCreateParam) {
         return skGoodsRepository.createGoods(skGoodsCreateParam);
+    }
+
+    public void loadCacheStock(Long skGoodsId) {
+        BigInteger cacheStock = redisRepository.getSkGoodsStockNum(skGoodsId);
+        skGoodsRepository.loadCacheStock(skGoodsId, cacheStock);
     }
 }

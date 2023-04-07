@@ -1,8 +1,8 @@
 package com.example.jseckill.infrastructure.common.converter;
 
 import com.example.jseckill.infrastructure.user.db.po.User;
-import com.example.jseckill.infrastructure.framework.config.permission.user.TokenUser;
 import com.example.jseckill.interfaces.auth.vo.UserInfoVO;
+import org.example.framework.config.permission.user.TokenUser;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

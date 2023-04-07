@@ -25,7 +25,8 @@ public class SkOrderService {
     @Transactional(rollbackFor = Throwable.class)
     public void cancelOrder(Long orderId) {
         SkOrder skOrder = orderRepository.findById(orderId);
-        if(skOrder.getOrderStatus() != OrderStatusEnum.NEW || skOrder.getOrderStatus() != OrderStatusEnum.PAY_CONFIRM) {
+        log.info("cancelOrder:{}", skOrder);
+        if(skOrder.getOrderStatus() != OrderStatusEnum.NEW && skOrder.getOrderStatus() != OrderStatusEnum.PAY_CONFIRM) {
             return;
         }
         // 如果已经进入支付回调，不再取消订单

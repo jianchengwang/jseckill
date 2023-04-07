@@ -33,7 +33,7 @@ client.global.set("skGoodsId", response.body.data);
 %}
 
 ### 商品预热
-PUT {{operate_url}}/skGoods/preheat/{{skGoodsId}}
+PUT {{operate_url}}/skGoods/{{skGoodsId}}/preheat
 Content-Type: application/json
 Authorization: {{operateToken}}
 
@@ -41,4 +41,15 @@ Authorization: {{operateToken}}
     "entryKey": "djingd!",
     "buyLimit": 3
 }
+
+> {%
+%}
+
+### 加载缓存库存
+PUT {{operate_url}}/skGoods/{{skGoodsId}}/loadCacheStock
+Content-Type: application/json
+Authorization: {{operateToken}}
+
+> {%
+%}
 

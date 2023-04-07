@@ -1,0 +1,11 @@
+server:
+  port: 9081
+
+spring:
+  application:
+    name: thirdparty
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/static/
+  cache:
+    type: redis

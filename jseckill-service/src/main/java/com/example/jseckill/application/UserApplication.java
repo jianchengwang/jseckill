@@ -5,16 +5,16 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.example.jseckill.domain.user.repository.UserRepository;
 import com.example.jseckill.infrastructure.user.db.po.User;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
-import com.example.jseckill.infrastructure.framework.config.permission.user.TokenUser;
-import com.example.jseckill.infrastructure.framework.config.permission.user.TokenUserContextHolder;
 import com.example.jseckill.infrastructure.common.converter.UserConverter;
-import com.example.jseckill.infrastructure.common.enums.UserStatusEnum;
 import com.example.jseckill.infrastructure.common.errors.AuthErrorCode;
 import com.example.jseckill.interfaces.auth.vo.UserInfoVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.framework.config.permission.user.TokenUser;
+import org.example.framework.config.permission.user.TokenUserContextHolder;
+import org.example.framework.config.permission.user.UserStatusEnum;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 import org.springframework.stereotype.Service;
 
 /**

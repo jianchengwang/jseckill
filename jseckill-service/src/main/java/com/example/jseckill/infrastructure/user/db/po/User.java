@@ -3,10 +3,10 @@ package com.example.jseckill.infrastructure.user.db.po;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.example.jseckill.infrastructure.framework.pojo.PO;
-import com.example.jseckill.infrastructure.common.enums.UserScopeEnum;
-import com.example.jseckill.infrastructure.common.enums.UserStatusEnum;
 import lombok.Data;
+import org.example.framework.config.permission.user.UserScopeEnum;
+import org.example.framework.config.permission.user.UserStatusEnum;
+import org.example.framework.pojo.PO;
 
 /**
  * @author jianchengwang

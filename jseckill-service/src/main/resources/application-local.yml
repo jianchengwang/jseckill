@@ -32,6 +32,6 @@ springdoc:
   api-docs:
     enabled: true
 
-payUrl: http://localhost:9071/api/thirdparty/wxpay
+payUrl: http://localhost:9081/api/thirdparty/wxpay
 backendNotifyUrl: http://localhost:9071/api/client/wxpay/notify
 

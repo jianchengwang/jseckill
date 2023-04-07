@@ -5,12 +5,12 @@ import com.example.jseckill.domain.seckill.entity.SkOrderDomain;
 import com.example.jseckill.domain.seckill.entity.SkPayDomain;
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.common.consts.SkConstant;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
 import com.example.jseckill.interfaces.client.dto.PayNotifyDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 import org.redisson.api.*;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +31,7 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     private final RedissonClient redissonClient;
     private final long TimeoutDays = 7;
     private final long TimeoutMinutes = 30;
+    private final long PayTimeoutMinutes = 5;
 
     @Override
     public boolean hasSkToken(Long skGoodsId, Long userId) {
@@ -138,15 +139,14 @@ public class SkRedisRepositoryImpl implements SkRedisRepository {
     @Override
     public void pushWaitPayOrder(Long orderId) {
         RBlockingQueue<Long> blockingFairQueue = redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
+        blockingFairQueue.expire(Duration.ofMinutes(TimeoutMinutes));
         RDelayedQueue<Long> delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
-        delayedQueue.offer(orderId,TimeoutMinutes, TimeUnit.MINUTES);
+        delayedQueue.offer(orderId, PayTimeoutMinutes, TimeUnit.MINUTES);
     }
 
     @Override
     public RBlockingQueue<Long> getWaitPayOrderQueue() {
-        RBlockingQueue<Long> queue = redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
-        queue.expire(Duration.ofMinutes(TimeoutMinutes));
-        return queue;
+        return redissonClient.getBlockingQueue(SkConstant.SK_ORDER_WAITPAY_QUEUE);
     }
 
     @Override

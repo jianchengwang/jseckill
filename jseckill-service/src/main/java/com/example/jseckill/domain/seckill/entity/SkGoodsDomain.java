@@ -1,10 +1,10 @@
 package com.example.jseckill.domain.seckill.entity;
 
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 
 import java.time.LocalDateTime;
 

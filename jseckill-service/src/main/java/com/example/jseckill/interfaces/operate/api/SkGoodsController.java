@@ -1,13 +1,13 @@
 package com.example.jseckill.interfaces.operate.api;
 
 import com.example.jseckill.application.SkGoodsApplication;
-import com.example.jseckill.infrastructure.framework.pojo.Response;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsCreateDTO;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsPreheatDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.framework.pojo.Response;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -29,9 +29,16 @@ public class SkGoodsController {
     }
 
     @Operation(summary = "预热商品", description = "预热商品")
-    @PutMapping("preheat/{skGoodsId}")
+    @PutMapping("{skGoodsId}/preheat")
     public Response<String> preheat(@PathVariable Long skGoodsId, @Valid @RequestBody SkGoodsPreheatDTO preheatParam) {
         skGoodsApplication.preheat(skGoodsId, preheatParam);
+        return Response.ok();
+    }
+
+    @Operation(summary = "加载缓存内存", description = "加载缓存内存")
+    @PutMapping("{skGoodsId}/loadCacheStock")
+    public Response<String> loadCacheStock(@PathVariable Long skGoodsId) {
+        skGoodsApplication.loadCacheStock(skGoodsId);
         return Response.ok();
     }
 }

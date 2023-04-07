@@ -12,5 +12,7 @@ public interface SkGoodsRepository extends IService<SkGoods> {
     Long createGoods(SkGoodsCreateDTO skGoodsCreateParam);
     int subStock(Long skGoodsId, BigInteger deltaStock);
 
+    int loadCacheStock(Long skGoodsId, BigInteger cacheStock);
+
     SkGoods preheat(Long skGoodsId, SkGoodsPreheatDTO warmUpParam);
 }

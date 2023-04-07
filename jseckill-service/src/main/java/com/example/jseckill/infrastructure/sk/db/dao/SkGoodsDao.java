@@ -13,4 +13,6 @@ import java.math.BigInteger;
 @Mapper
 public interface SkGoodsDao extends BaseMapper<SkGoods> {
     int subStock(Long id, BigInteger deltaStock);
+
+    int loadCacheStock(Long id, BigInteger cacheStock);
 }

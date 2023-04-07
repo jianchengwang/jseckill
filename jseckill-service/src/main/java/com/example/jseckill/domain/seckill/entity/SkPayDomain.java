@@ -1,10 +1,10 @@
 package com.example.jseckill.domain.seckill.entity;
 
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.interfaces.client.dto.PayNotifyDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NoArgsConstructor
 public class SkPayDomain {
     private PayNotifyDTO payNotify;
-    private volatile AtomicInteger tryTimes = new AtomicInteger(0);
+    private AtomicInteger tryTimes = new AtomicInteger(0);
 
     public SkPayDomain(PayNotifyDTO payNotifyDTO) {
         this.payNotify = payNotifyDTO;

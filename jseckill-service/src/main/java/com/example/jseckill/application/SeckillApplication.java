@@ -8,8 +8,6 @@ import com.example.jseckill.domain.seckill.repository.SkOrderRepository;
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.common.converter.SkGoodsConverter;
 import com.example.jseckill.infrastructure.common.enums.PayMethodEnum;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
 import com.example.jseckill.infrastructure.sk.db.po.SkOrder;
 import com.example.jseckill.interfaces.client.dto.ConfirmPayInfoDTO;
@@ -18,6 +16,8 @@ import com.example.jseckill.interfaces.client.vo.SkGoodsInfoVO;
 import com.example.jseckill.interfaces.thirdparty.dto.WxPayInfoDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

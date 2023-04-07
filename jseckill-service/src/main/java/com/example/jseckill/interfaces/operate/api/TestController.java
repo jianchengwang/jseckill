@@ -1,11 +1,10 @@
 package com.example.jseckill.interfaces.operate.api;
 
 import com.example.jseckill.application.TestApplication;
-import com.example.jseckill.domain.user.repository.UserRepository;
-import com.example.jseckill.infrastructure.framework.pojo.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.framework.pojo.Response;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

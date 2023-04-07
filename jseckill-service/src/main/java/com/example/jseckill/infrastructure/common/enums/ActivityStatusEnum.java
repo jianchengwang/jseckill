@@ -1,6 +1,6 @@
 package com.example.jseckill.infrastructure.common.enums;
 
-import com.example.jseckill.infrastructure.framework.pojo.IBaseEnum;
+import org.example.framework.pojo.IBaseEnum;
 
 /**
  * 活动状态枚举

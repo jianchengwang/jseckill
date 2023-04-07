@@ -2,8 +2,8 @@ package com.example.jseckill.infrastructure.sk.db.po;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.example.jseckill.infrastructure.common.enums.PayMethodEnum;
-import com.example.jseckill.infrastructure.framework.pojo.PO;
 import lombok.Data;
+import org.example.framework.pojo.PO;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;

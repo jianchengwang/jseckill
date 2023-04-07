@@ -2,11 +2,11 @@ package com.example.jseckill.domain.seckill.entity;
 
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.common.enums.OrderStatusEnum;
-import com.example.jseckill.infrastructure.framework.exception.ClientException;
-import com.example.jseckill.infrastructure.framework.exception.FrameworkErrorCode;
 import com.example.jseckill.infrastructure.sk.db.po.SkOrder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.framework.exception.ClientException;
+import org.example.framework.exception.FrameworkErrorCode;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class SkOrderDomain {
     private BigInteger skPrice;
     private BigInteger buyNum;
     private Long userId;
-    private volatile AtomicInteger tryTimes = new AtomicInteger(0);
+    private AtomicInteger tryTimes = new AtomicInteger(0);
 
     public SkOrderDomain(String skToken, Long skGoodsId, BigInteger skPrice, BigInteger buyNum, Long userId) {
         this.skToken = skToken;
