@@ -1,5 +1,5 @@
 ### 用户名密码登录
-POST {{auth_url}}/user/loginByUsername
+POST {{auth_url}}/loginByUsername
 Content-Type: application/json
 
 {

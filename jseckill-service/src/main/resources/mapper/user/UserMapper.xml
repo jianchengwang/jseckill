@@ -4,9 +4,21 @@
 <mapper namespace="com.example.jseckill.infrastructure.user.db.dao.UserDao">
 
     <select id="getByUsername" resultType="com.example.jseckill.infrastructure.user.db.po.User">
-        select t1.* from t_user t1
+        select a.* from t_user a
         <where>
-            t1.username = #{username}
+            a.username = #{username}
+        </where>
+    </select>
+
+    <select id="page" resultType="com.example.jseckill.interfaces.operate.vo.UserVO">
+        select a.* from t_user a
+        <where>
+            <if test="param != null and param.q != null and param.q!=''" >
+                and (a.nickname like CONCAT('%',#{param.q},'%'))
+            </if>
+            <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''" >
+                and (${ew.sqlSegment})
+            </if>
         </where>
     </select>
 </mapper>

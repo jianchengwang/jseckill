@@ -25,6 +25,7 @@ public class TestApplication {
 
     public void clearData() {
         jdbcTemplate.execute("""
+            delete from t_user where id > 1;
             truncate table t_sk_pay_notify;
             truncate table t_sk_order;
             truncate table t_sk_goods;

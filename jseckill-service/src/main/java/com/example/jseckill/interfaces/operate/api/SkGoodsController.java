@@ -1,12 +1,16 @@
 package com.example.jseckill.interfaces.operate.api;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.jseckill.application.SkGoodsApplication;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsCreateDTO;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsPreheatDTO;
+import com.example.jseckill.interfaces.operate.query.SkGoodsQuery;
+import com.example.jseckill.interfaces.operate.vo.SkGoodsVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.framework.pojo.PageInfo;
 import org.example.framework.pojo.Response;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +25,12 @@ import org.springframework.web.bind.annotation.*;
 public class SkGoodsController {
 
     private final SkGoodsApplication skGoodsApplication;
+
+    @Operation(summary = "商品分页", description = "商品分页")
+    @GetMapping("page")
+    public Response<IPage<SkGoodsVO>> page(PageInfo pageInfo, SkGoodsQuery query) {
+        return Response.ok(skGoodsApplication.page(pageInfo, query));
+    }
 
     @Operation(summary = "创建商品", description = "创建商品")
     @PostMapping("create")

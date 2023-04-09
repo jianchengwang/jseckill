@@ -3,24 +3,36 @@
 
 <mapper namespace="com.example.jseckill.infrastructure.sk.db.dao.SkGoodsDao">
 
+    <select id="page" resultType="com.example.jseckill.interfaces.operate.vo.SkGoodsVO">
+        select a.* from t_sk_goods a
+        <where>
+            <if test="param != null and param.q != null and param.q!=''" >
+                and (a.goods_name like CONCAT('%',#{param.q},'%'))
+            </if>
+            <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''" >
+                and (${ew.sqlSegment})
+            </if>
+        </where>
+    </select>
+
     <update id="subStock">
-        update t_sk_goods t1
+        update t_sk_goods a
         <set>
-            t1.stock_num = t1.stock_num - #{deltaStock}
+            a.stock_num = a.stock_num - #{deltaStock}
         </set>
         <where>
-            t1.id = #{id}
-            and t1.stock_num > 0
+            a.id = #{id}
+            and a.stock_num > 0
         </where>
     </update>
 
     <update id="loadCacheStock">
-        update t_sk_goods t1
+        update t_sk_goods a
         <set>
-            t1.stock_num = #{cacheStock}
+            a.stock_num = #{cacheStock}
         </set>
         <where>
-            t1.id = #{id}
+            a.id = #{id}
         </where>
     </update>
 </mapper>

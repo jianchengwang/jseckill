@@ -1,12 +1,16 @@
 package com.example.jseckill.application;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.jseckill.domain.seckill.repository.SkGoodsRepository;
 import com.example.jseckill.domain.seckill.repository.SkRedisRepository;
 import com.example.jseckill.infrastructure.sk.db.po.SkGoods;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsCreateDTO;
 import com.example.jseckill.interfaces.operate.dto.SkGoodsPreheatDTO;
+import com.example.jseckill.interfaces.operate.query.SkGoodsQuery;
+import com.example.jseckill.interfaces.operate.vo.SkGoodsVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.framework.pojo.PageInfo;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -21,6 +25,10 @@ import java.math.BigInteger;
 public class SkGoodsApplication {
     private final SkGoodsRepository skGoodsRepository;
     private final SkRedisRepository redisRepository;
+
+    public IPage<SkGoodsVO> page(PageInfo pageInfo, SkGoodsQuery query) {
+        return skGoodsRepository.page(pageInfo, query);
+    }
 
     public void preheat(Long skGoodsId, SkGoodsPreheatDTO preheatParam) {
         SkGoods skGoods = skGoodsRepository.findById(skGoodsId);

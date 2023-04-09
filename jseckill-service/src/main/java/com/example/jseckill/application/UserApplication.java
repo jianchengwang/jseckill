@@ -1,20 +1,12 @@
 package com.example.jseckill.application;
 
-import cn.dev33.satoken.secure.SaSecureUtil;
-import cn.dev33.satoken.stp.SaTokenInfo;
-import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.jseckill.domain.user.repository.UserRepository;
-import com.example.jseckill.infrastructure.user.db.po.User;
-import com.example.jseckill.infrastructure.common.converter.UserConverter;
-import com.example.jseckill.infrastructure.common.errors.AuthErrorCode;
-import com.example.jseckill.interfaces.auth.vo.UserInfoVO;
+import com.example.jseckill.interfaces.operate.query.UserQuery;
+import com.example.jseckill.interfaces.operate.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.framework.config.permission.user.TokenUser;
-import org.example.framework.config.permission.user.TokenUserContextHolder;
-import org.example.framework.config.permission.user.UserStatusEnum;
-import org.example.framework.exception.ClientException;
-import org.example.framework.exception.FrameworkErrorCode;
+import org.example.framework.pojo.PageInfo;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,36 +20,7 @@ public class UserApplication {
 
     private final UserRepository userRepository;
 
-    public String login(String username, String password) {
-        User user = userRepository.findByUsername(username);
-        if(user == null){
-            throw new ClientException("用户不存在", FrameworkErrorCode.RESOURCE_NOT_FOUND);
-        }
-        String checkPassword = SaSecureUtil.md5BySalt(password, user.getPasswordSalt());
-        if(!user.getPassword().equals(checkPassword)) {
-            throw new ClientException(AuthErrorCode.USER_PASSWORD_ERROR);
-        }
-        if(UserStatusEnum.NORMAL != user.getUserStatus()){
-            throw new ClientException(AuthErrorCode.USER_NOT_NORMAL);
-        }
-
-        // 登录，用户编号作为loginId
-        StpUtil.login(user.getId());
-        SaTokenInfo token = StpUtil.getTokenInfo();
-
-        // 放到用户上下文
-        TokenUser tokenUser = UserConverter.MAPPER.toTokenUser(user);
-        TokenUserContextHolder.setCurrentUser(tokenUser);
-
-        return token.getTokenValue();
-    }
-
-    public void logout() {
-        StpUtil.logout();
-    }
-
-    public UserInfoVO getUserInfo() {
-        TokenUser tokenUser = TokenUserContextHolder.currentUser();
-        return UserConverter.MAPPER.toUserInfoVO(tokenUser);
+    public IPage<UserVO> page(PageInfo pageInfo, UserQuery query) {
+        return userRepository.page(pageInfo, query);
     }
 }
