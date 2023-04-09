@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { resolve } from "path";
 import pkg from "./package.json";
 import { UserConfigExport, ConfigEnv, loadEnv } from "vite";
-import { warpperEnv, regExps } from "./build";
+import { warpperEnv, regExps } from "./builds";
 import vue from '@vitejs/plugin-vue';
 
 /** 当前执行node命令时文件夹的地址（工作目录） */
@@ -18,7 +18,7 @@ const pathResolve = (dir: string): string => {
 /** 设置别名 */
 const alias: Record<string, string> = {
   "/@": pathResolve("src"),
-  "@build": pathResolve("build")
+  "@build": pathResolve("builds")
 };
 
 const { dependencies, devDependencies, name, version } = pkg;
@@ -44,7 +44,7 @@ export default ({ command, mode }: ConfigEnv): UserConfigExport => {
     resolve: {
       alias:  {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        "@build": pathResolve("build")
+        "@build": pathResolve("builds")
       }
     },
     // 服务端渲染

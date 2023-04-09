@@ -27,7 +27,7 @@
         "src/*"
       ],
       "@build/*": [
-        "build/*"
+        "builds/*"
       ]
     },
     "types": [
